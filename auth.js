@@ -25,20 +25,11 @@ onAuthStateChanged(auth, (user) => {
         // User is logged in
         console.log("User is logged in:", user.email);
         
-        // If on a public page (login/register), redirect to dashboard
-        if (isPublic) {
-            console.log("User is on public page, redirecting to dashboard...");
-            window.location.href = "dashboard.html";
-        }
+        window.location.href = "dashboard.html";
+
     } else {
         // User is not logged in
-        console.log("User not logged in");
-        
-        // If trying to access a protected page, redirect to login
-        if (!isPublic) {
-            console.log("User trying to access protected page, redirecting to login...");
-            window.location.href = "auth-basic-login.html";
-        }
+        window.location.href = "auth-basic-login.html";
     }
 });
 

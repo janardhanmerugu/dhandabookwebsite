@@ -22,6 +22,7 @@
   <link href="assets/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css?family=Material+Icons+Outlined" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
 
   <!--main css-->
   <link href="assets/css/bootstrap-extended.css" rel="stylesheet">
@@ -98,29 +99,23 @@
 
   <!--plugins-->
   <script src="assets/js/jquery.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-  <!-- Login Script with Firebase Auth -->
+  <!-- Login Script -->
   <script type="module">
+    // Import from your existing firebase-config.js
     import { auth } from './js/firebase-config.js';
+    import { login } from './js/auth.js';
     import { signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
 
-    // Check if user is already logged in - if yes, redirect to dashboard
-    console.log("Checking if user is already logged in...");
-    onAuthStateChanged(auth, (user) => {
-      if (user) {
-        console.log("User already logged in:", user.email);
-        console.log("Redirecting to dashboard...");
-        window.location.href = "dashboard.html";
-      } else {
-        console.log("No user logged in, showing login form");
-      }
-    });
+    // Check if user is already logged in (handled by auth.js)
+    // The auth.js file will automatically redirect if user is logged in
 
-    // Show/Hide Password Toggle
+    // Show/hide password toggle
     const showHidePassword = document.getElementById('show_hide_password');
     const passwordInput = document.getElementById('inputChoosePassword');
     const toggleIcon = showHidePassword.querySelector('i');
-    
+
     showHidePassword.querySelector('a').addEventListener('click', function(e) {
       e.preventDefault();
       if (passwordInput.type === 'password') {
@@ -134,94 +129,70 @@
       }
     });
 
-    // Show Alert Message
+    // Display alert messages
     function showAlert(message, type = 'danger') {
       const alertBox = document.getElementById('alertMessage');
       const alertText = document.getElementById('alertText');
       
       alertText.textContent = message;
-      alertBox.classList.remove('d-none', 'alert-danger', 'alert-success');
-      alertBox.classList.add('alert-' + type, 'show');
+      alertBox.className = `alert alert-${type} alert-dismissible fade show mt-3`;
       
-      // Auto hide after 5 seconds
+      // Auto-hide after 5 seconds
       setTimeout(() => {
         alertBox.classList.remove('show');
-        setTimeout(() => {
-          alertBox.classList.add('d-none');
-        }, 150);
+        alertBox.classList.add('d-none');
       }, 5000);
     }
 
-    // Handle Login Form Submit
+    // Get user-friendly error message
+    function getErrorMessage(errorCode) {
+      switch (errorCode) {
+        case 'auth/invalid-email':
+          return 'Invalid email address format.';
+        case 'auth/user-disabled':
+          return 'This account has been disabled.';
+        case 'auth/user-not-found':
+          return 'No account found with this email.';
+        case 'auth/wrong-password':
+          return 'Incorrect password.';
+        case 'auth/invalid-credential':
+          return 'Invalid email or password.';
+        case 'auth/too-many-requests':
+          return 'Too many failed login attempts. Please try again later.';
+        case 'auth/network-request-failed':
+          return 'Network error. Please check your internet connection.';
+        default:
+          return 'Login failed. Please try again.';
+      }
+    }
+
+    // Login form submission
     const loginForm = document.getElementById('loginForm');
     const loginBtn = document.getElementById('loginBtn');
     const btnText = document.getElementById('btnText');
     const btnSpinner = document.getElementById('btnSpinner');
-    const emailInput = document.getElementById('inputEmailAddress');
 
     loginForm.addEventListener('submit', async (e) => {
       e.preventDefault();
-      
-      const email = emailInput.value.trim();
-      const password = passwordInput.value;
 
-      // Basic validation
-      if (!email || !password) {
-        showAlert('Please enter both email and password', 'danger');
-        return;
-      }
+      const email = document.getElementById('inputEmailAddress').value.trim();
+      const password = document.getElementById('inputChoosePassword').value;
 
-      // Show loading state
+      // Disable button and show spinner
       loginBtn.disabled = true;
       btnText.classList.add('d-none');
       btnSpinner.classList.remove('d-none');
 
       try {
-        console.log("Attempting to login with:", email);
-        
-        // Sign in with Firebase
-        const userCredential = await signInWithEmailAndPassword(auth, email, password);
-        
-        console.log("Login successful:", userCredential.user.email);
-        showAlert('Login successful! Redirecting...', 'success');
-        
-        // Redirect to dashboard after short delay
-        setTimeout(() => {
-          window.location.href = "dashboard.html";
-        }, 1000);
+        // Use the login function from auth.js
+        await login(email, password);
+        // The login function will handle the redirect to dashboard
         
       } catch (error) {
-        console.error("Login error:", error.code, error.message);
+        console.error('Login error:', error.code, error.message);
+        showAlert(getErrorMessage(error.code), 'danger');
         
-        // Handle specific error cases
-        let errorMessage = 'Login failed. Please try again.';
-        
-        switch(error.code) {
-          case 'auth/invalid-email':
-            errorMessage = 'Invalid email address format.';
-            break;
-          case 'auth/user-disabled':
-            errorMessage = 'This account has been disabled.';
-            break;
-          case 'auth/user-not-found':
-            errorMessage = 'No account found with this email.';
-            break;
-          case 'auth/wrong-password':
-            errorMessage = 'Incorrect password. Please try again.';
-            break;
-          case 'auth/invalid-credential':
-            errorMessage = 'Invalid email or password.';
-            break;
-          case 'auth/too-many-requests':
-            errorMessage = 'Too many failed attempts. Please try again later.';
-            break;
-          default:
-            errorMessage = error.message;
-        }
-        
-        showAlert(errorMessage, 'danger');
-        
-        // Reset button state
+        // Re-enable button
         loginBtn.disabled = false;
         btnText.classList.remove('d-none');
         btnSpinner.classList.add('d-none');
