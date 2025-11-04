@@ -103,13 +103,14 @@
 
   <!-- Login Script -->
   <script type="module">
+    console.log("✅ Login page script loaded");
+
     // Import from your existing firebase-config.js
     import { auth } from './js/firebase-config.js';
     import { login } from './js/auth.js';
     import { signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
 
-    // Check if user is already logged in (handled by auth.js)
-    // The auth.js file will automatically redirect if user is logged in
+    console.log("📦 Firebase modules imported:", { auth, login });
 
     // Show/hide password toggle
     const showHidePassword = document.getElementById('show_hide_password');
@@ -118,19 +119,23 @@
 
     showHidePassword.querySelector('a').addEventListener('click', function(e) {
       e.preventDefault();
+      console.log("👁️ Toggle password visibility clicked");
       if (passwordInput.type === 'password') {
         passwordInput.type = 'text';
         toggleIcon.classList.remove('bi-eye-slash-fill');
         toggleIcon.classList.add('bi-eye-fill');
+        console.log("🔓 Password is now visible");
       } else {
         passwordInput.type = 'password';
         toggleIcon.classList.remove('bi-eye-fill');
         toggleIcon.classList.add('bi-eye-slash-fill');
+        console.log("🔒 Password is now hidden");
       }
     });
 
     // Display alert messages
     function showAlert(message, type = 'danger') {
+      console.log(`⚠️ Alert triggered [${type}]:`, message);
       const alertBox = document.getElementById('alertMessage');
       const alertText = document.getElementById('alertText');
       
@@ -146,6 +151,7 @@
 
     // Get user-friendly error message
     function getErrorMessage(errorCode) {
+      console.log("❌ Handling Firebase error:", errorCode);
       switch (errorCode) {
         case 'auth/invalid-email':
           return 'Invalid email address format.';
@@ -174,22 +180,25 @@
 
     loginForm.addEventListener('submit', async (e) => {
       e.preventDefault();
+      console.log("📝 Login form submitted");
 
       const email = document.getElementById('inputEmailAddress').value.trim();
       const password = document.getElementById('inputChoosePassword').value;
+
+      console.log("📧 Email entered:", email);
+      console.log("🔑 Password length:", password.length);
 
       // Disable button and show spinner
       loginBtn.disabled = true;
       btnText.classList.add('d-none');
       btnSpinner.classList.remove('d-none');
+      console.log("⏳ Login process started...");
 
       try {
-        // Use the login function from auth.js
         await login(email, password);
-        // The login function will handle the redirect to dashboard
-        
+        console.log("✅ Login successful — redirect should happen from auth.js");
       } catch (error) {
-        console.error('Login error:', error.code, error.message);
+        console.error('❌ Login error:', error.code, error.message);
         showAlert(getErrorMessage(error.code), 'danger');
         
         // Re-enable button
@@ -198,6 +207,8 @@
         btnSpinner.classList.add('d-none');
       }
     });
+
+    console.log("🚀 Login script initialized successfully");
   </script>
 
 </body>
