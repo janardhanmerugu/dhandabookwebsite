@@ -79,8 +79,10 @@
             <a class="dropdown-item d-flex align-items-center gap-2 py-2" href="javascript:;"><i
                 class="material-icons-outlined">cloud_download</i>Downloads</a>
             <hr class="dropdown-divider">
-            <a class="dropdown-item d-flex align-items-center gap-2 py-2" href="javascript:;"><i
-                class="material-icons-outlined">power_settings_new</i>Logout</a>
+            <a id="logoutBtn" class="dropdown-item d-flex align-items-center gap-2 py-2" href="javascript:;">
+               <i class="material-icons-outlined">power_settings_new</i>Logout
+            </a>
+
           </div>
         </li>
       </ul>
@@ -814,5 +816,30 @@
   <script src="assets/js/main.js"></script>
 
 </body>
+
+<script type="module">
+  import { auth } from "./js/firebase-config.js";
+  import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+
+  // Check if user is logged in
+  onAuthStateChanged(auth, (user) => {
+    if (!user) {
+      window.location.href = "auth-basic-login.html";
+    } else {
+      console.log("User is logged in:", user.email);
+    }
+  });
+
+  document.addEventListener("DOMContentLoaded", () => {
+    const logoutBtn = document.getElementById("logoutBtn");
+    logoutBtn.addEventListener("click", () => {
+      signOut(auth).then(() => {
+        window.location.href = "auth-basic-login.html"; 
+      }).catch((error) => {
+        console.error("Logout error:", error);
+      });
+    });
+  });
+</script>
 
 </html>
