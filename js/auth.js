@@ -6,7 +6,7 @@ import {
   signOut,
 } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
 
-// ✅ Check login state when the page loads (no public page logic)
+// ✅ Check login state when the page loads
 console.log("Checking auth state on page load...");
 onAuthStateChanged(auth, (user) => {
   const currentPath = window.location.pathname;
@@ -14,19 +14,19 @@ onAuthStateChanged(auth, (user) => {
   if (user) {
     console.log("✅ User is logged in:", user.email);
 
-    // Only redirect if user is on login/register/forgot pages
+    // Redirect to index.html if user is on a login/register page
     if (
       currentPath.includes("auth-basic-login.html") ||
       currentPath.includes("auth-basic-register.html") ||
       currentPath.includes("auth-basic-forgot-password.html")
     ) {
-      console.log("➡️ Redirecting to dashboard...");
-      window.location.href = "dashboard.html";
+      console.log("➡️ Redirecting to index.html...");
+      window.location.href = "index.html";
     }
   } else {
     console.log("❌ User not logged in");
 
-    // Redirect to login only if not already there
+    // Redirect to login page if not logged in
     if (!currentPath.includes("auth-basic-login.html")) {
       console.log("➡️ Redirecting to login...");
       window.location.href = "auth-basic-login.html";
@@ -40,7 +40,7 @@ export function login(email, password) {
   return signInWithEmailAndPassword(auth, email, password)
     .then((userCredential) => {
       console.log("✅ Login successful:", userCredential.user.email);
-      window.location.href = "dashboard.html";
+      window.location.href = "index.html";
       return userCredential;
     })
     .catch((error) => {
