@@ -1,16 +1,16 @@
 import { auth } from "./firebase-config.js";
 import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
 
-// Redirect if user not logged in
+// Redirect to login if not authenticated
 onAuthStateChanged(auth, (user) => {
   if (!user) {
-    window.location.href = "index.html"; // login page
+    window.location.href = "index.html";
   } else {
-    console.log("User logged in:", user.email);
+    console.log("User is logged in:", user.email);
   }
 });
 
-// Logout button
+// Wait until DOM is ready
 document.addEventListener("DOMContentLoaded", () => {
   const logoutBtn = document.getElementById("logoutBtn");
   if (!logoutBtn) {
@@ -19,13 +19,14 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   logoutBtn.addEventListener("click", async (e) => {
-    e.preventDefault(); // prevent default <a> behavior
+    e.preventDefault();
     try {
       await signOut(auth);
-      console.log("User logged out");
+      console.log("User logged out successfully!");
       window.location.href = "index.html";
     } catch (error) {
-      console.error("Logout error:", error);
+      console.error("Logout failed:", error);
+      alert("Logout failed: " + error.message);
     }
   });
 });
