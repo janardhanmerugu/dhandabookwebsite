@@ -14,22 +14,22 @@ onAuthStateChanged(auth, (user) => {
   if (user) {
     console.log("✅ User is logged in:", user.email);
 
-    // Redirect to index.html if user is on a login/register page
+    // Redirect to dashboard.html if user is on a login/register page
     if (
-      currentPath.includes("auth-basic-login.html") ||
+      currentPath.includes("index.html") || // login page renamed
       currentPath.includes("auth-basic-register.html") ||
       currentPath.includes("auth-basic-forgot-password.html")
     ) {
-      console.log("➡️ Redirecting to index.html...");
-      window.location.href = "index.html";
+      console.log("➡️ Redirecting to dashboard.html...");
+      window.location.href = "dashboard.html";
     }
   } else {
     console.log("❌ User not logged in");
 
     // Redirect to login page if not logged in
-    if (!currentPath.includes("auth-basic-login.html")) {
+    if (!currentPath.includes("index.html")) { // login page renamed
       console.log("➡️ Redirecting to login...");
-      window.location.href = "auth-basic-login.html";
+      window.location.href = "index.html";
     }
   }
 });
@@ -40,7 +40,7 @@ export function login(email, password) {
   return signInWithEmailAndPassword(auth, email, password)
     .then((userCredential) => {
       console.log("✅ Login successful:", userCredential.user.email);
-      window.location.href = "index.html";
+      window.location.href = "dashboard.html"; // redirect after login
       return userCredential;
     })
     .catch((error) => {
@@ -55,7 +55,7 @@ export function logout() {
   return signOut(auth)
     .then(() => {
       console.log("✅ Logout successful");
-      window.location.href = "auth-basic-login.html";
+      window.location.href = "index.html"; // redirect after logout
     })
     .catch((error) => {
       console.error("❌ Logout failed:", error);
