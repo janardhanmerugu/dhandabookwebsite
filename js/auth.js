@@ -16,7 +16,7 @@ onAuthStateChanged(auth, (user) => {
 
     // Redirect to dashboard.html if user is on a login/register page
     if (
-      currentPath.includes("index.html") || // login page renamed
+      currentPath.includes("dashboard.html") || // login page renamed
       currentPath.includes("auth-basic-register.html") ||
       currentPath.includes("auth-basic-forgot-password.html")
     ) {
