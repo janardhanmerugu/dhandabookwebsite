@@ -2,16 +2,41 @@
 import { auth } from "./firebase-config.js";
 import { signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
 
+// List of public pages that don't require authentication
+const publicPages = [
+    'auth-basic-login.html',
+    'auth-basic-register.html',
+    'auth-basic-forgot-password.html'
+];
+
+// Check if current page is a public page
+function isPublicPage() {
+    const currentPath = window.location.pathname;
+    return publicPages.some(page => currentPath.includes(page));
+}
+
 // Check login state when the page loads
+console.log("Checking auth state on page load...");
 onAuthStateChanged(auth, (user) => {
+    const currentPath = window.location.pathname;
+    const isPublic = isPublicPage();
+    
     if (user) {
-        // User logged in → go to dashboard if not already there
-        if (!window.location.href.includes("dashboard.html")) {
+        // User is logged in
+        console.log("User is logged in:", user.email);
+        
+        // If on a public page (login/register), redirect to dashboard
+        if (isPublic) {
+            console.log("User is on public page, redirecting to dashboard...");
             window.location.href = "dashboard.html";
         }
     } else {
-        // User not logged in → stay on login page
-        if (!window.location.href.includes("auth-basic-login.html")) {
+        // User is not logged in
+        console.log("User not logged in");
+        
+        // If trying to access a protected page, redirect to login
+        if (!isPublic) {
+            console.log("User trying to access protected page, redirecting to login...");
             window.location.href = "auth-basic-login.html";
         }
     }
@@ -19,18 +44,39 @@ onAuthStateChanged(auth, (user) => {
 
 // Login function
 export function login(email, password) {
-    signInWithEmailAndPassword(auth, email, password)
+    console.log("Attempting login with email:", email);
+    return signInWithEmailAndPassword(auth, email, password)
         .then((userCredential) => {
+            console.log("Login successful:", userCredential.user.email);
             window.location.href = "dashboard.html";
+            return userCredential;
         })
         .catch((error) => {
-            alert(error.message);
+            console.error("Login failed:", error.code, error.message);
+            throw error; // Re-throw so calling code can handle it
         });
 }
 
 // Logout function
 export function logout() {
-    signOut(auth).then(() => {
-        window.location.href = "auth-basic-login.html";
-    });
+    console.log("Logging out...");
+    return signOut(auth)
+        .then(() => {
+            console.log("Logout successful");
+            window.location.href = "auth-basic-login.html";
+        })
+        .catch((error) => {
+            console.error("Logout failed:", error);
+            throw error;
+        });
+}
+
+// Get current user
+export function getCurrentUser() {
+    return auth.currentUser;
+}
+
+// Check if user is logged in (synchronous)
+export function isUserLoggedIn() {
+    return auth.currentUser !== null;
 }
