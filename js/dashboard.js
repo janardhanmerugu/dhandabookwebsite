@@ -46,7 +46,7 @@ function formatDate(timestamp) {
 }
 
 // ✅ Fetch users from Firebase
-async function fetchAndDisplayUsers() {
+async function fetchAndDisplayUsers(customDays = 7) {
   const usersRef = ref(db, "users");
   try {
     const snapshot = await get(usersRef);
@@ -133,7 +133,16 @@ async function fetchAndDisplayUsers() {
     document.getElementById("totalUsersWeek").innerText = totalUsersWeek;
 
     // Update user table
-    updateTable(userList);
+
+    // ✅ Sort by most recent activity
+    userList.sort((a, b) => b.lastUpdate - a.lastUpdate);
+
+    const CUSTOM_DAYS_MS = customDays * 24 * 60 * 60 * 1000;
+    const filteredUsers = userList.filter(user => (now - user.lastUpdate) <= CUSTOM_DAYS_MS);
+
+
+    document.getElementById("userTitle").innerText = "Users = " + filteredUsers.length;
+    updateTable(filteredUsers);
 
     console.log("=== Summary ===");
     console.log(`Total users (all time): ${totalUsersYear}`);
@@ -143,6 +152,13 @@ async function fetchAndDisplayUsers() {
     console.error("Error fetching users:", error);
   }
 }
+
+// ✅ Refresh button click handler
+document.getElementById("btnRefresh").addEventListener("click", () => {
+  const daysInput = document.getElementById("daysInput").value.trim();
+  const days = parseInt(daysInput) || 7; // default 7 if invalid
+  fetchAndDisplayUsers(days);
+});
 
 // ✅ Render user data in table
 function updateTable(users) {

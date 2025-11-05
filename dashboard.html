@@ -194,9 +194,32 @@
               <div class="d-flex align-items-start justify-content-between mb-3">
                 <div>
                   <h5 class="mb-0">Active Users</h5>
-                  <small class="text-muted">Click on any user to view details</small>
                 </div>
               </div>
+
+
+              <!-- Top Row: Title, Days Label, Input, Refresh Button - All in One Row -->
+              <div class="d-flex flex-wrap align-items-center justify-content-between mb-3 gap-2">
+  
+               <!-- Title -->
+                <h5 id="userTitle" class="mb-0 fw-bold text-primary">Users = 0</h5>
+
+                <div class="d-flex align-items-center gap-2">
+                  <!-- Days Label -->
+                 <label for="daysInput" class="fw-semibold text-secondary mb-0">Days:</label>
+
+                 <!-- Days Input -->
+                 <input type="number" id="daysInput" class="form-control text-center fw-bold" 
+                 value="7" min="1" max="365" style="width: 80px;">
+
+                  <!-- Refresh Button -->
+                 <button id="btnRefresh" class="btn btn-outline-primary d-flex align-items-center gap-1">
+                  <i class="material-icons-outlined">refresh</i> Refresh
+                 </button>
+                </div>
+
+              </div>
+
 
               <div class="table-responsive">
                 <table class="table align-middle mb-0 table-striped table-hover">
