@@ -1,30 +1,29 @@
 <!doctype html>
 <html lang="en" data-bs-theme="blue-theme">
-
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Dhanda Book</title>
+  <title>Dhanda Book Dashboard</title>
 
-  <!-- Favicon -->
+  <!-- ========== FAVICON ========== -->
   <link rel="icon" href="assets/images/favicon-32x32.jpg" type="image/png">
 
-  <!-- Loader -->
+  <!-- ========== LOADER ========== -->
   <link href="assets/css/pace.min.css" rel="stylesheet">
   <script src="assets/js/pace.min.js"></script>
 
-  <!-- Plugins CSS -->
+  <!-- ========== PLUGINS ========== -->
   <link rel="stylesheet" href="assets/plugins/metismenu/metisMenu.min.css">
   <link rel="stylesheet" href="assets/plugins/metismenu/mm-vertical.css">
 
-  <!-- Bootstrap -->
+  <!-- ========== BOOTSTRAP ========== -->
   <link href="assets/css/bootstrap.min.css" rel="stylesheet">
 
-  <!-- Fonts -->
+  <!-- ========== FONTS ========== -->
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css?family=Material+Icons+Outlined" rel="stylesheet">
 
-  <!-- Theme & Main CSS -->
+  <!-- ========== THEME STYLES ========== -->
   <link href="assets/css/bootstrap-extended.css" rel="stylesheet">
   <link href="sass/main.css" rel="stylesheet">
   <link href="sass/dark-theme.css" rel="stylesheet">
@@ -39,10 +38,12 @@
   <!-- ================= HEADER ================= -->
   <header class="top-header">
     <nav class="navbar navbar-expand align-items-center gap-4">
+      <!-- Sidebar Toggle (mobile) -->
       <div class="btn-toggle d-lg-none">
-        <a href="javascript:;"><i class="material-icons-outlined">menu</i></a>
+        <a href="javascript:void(0);"><i class="material-icons-outlined">menu</i></a>
       </div>
 
+      <!-- Search Bar -->
       <div class="search-bar">
         <div class="position-relative">
           <input class="form-control rounded-5 px-5 search-control" type="text" placeholder="Search">
@@ -52,41 +53,34 @@
         </div>
       </div>
 
+      <!-- Right Menu -->
       <ul class="navbar-nav gap-1 nav-right-links align-items-center ms-auto">
+        <!-- Notifications -->
         <li class="nav-item">
-          <a class="nav-link position-relative" href="javascript:;">
+          <a class="nav-link position-relative" href="javascript:void(0);">
             <i class="material-icons-outlined">notifications</i>
             <span class="badge-notify">5</span>
           </a>
         </li>
 
+        <!-- Profile Dropdown -->
         <li class="nav-item dropdown">
-          <a href="javascript:;" class="dropdown-toggle dropdown-toggle-nocaret" data-bs-toggle="dropdown">
-            <img src="assets/images/favicon-32x32.jpg" class="rounded-circle p-1 border" width="45" height="45" alt="">
+          <a href="javascript:void(0);" class="dropdown-toggle dropdown-toggle-nocaret" data-bs-toggle="dropdown">
+            <img src="assets/images/favicon-32x32.jpg" class="rounded-circle p-1 border" width="45" height="45" alt="User">
           </a>
           <div class="dropdown-menu dropdown-user dropdown-menu-end shadow">
             <div class="text-center py-3">
-              <img src="assets/images/dhandabook 512.png" class="rounded-circle p-1 shadow mb-3" width="90" height="90" alt="">
-              <h5 class="user-name mb-0 fw-bold">Hello, Jhon</h5>
+              <img src="assets/images/dhandabook 512.png" class="rounded-circle p-1 shadow mb-3" width="90" height="90" alt="Profile">
+              <h5 class="user-name mb-0 fw-bold">Hello, Admin</h5>
             </div>
             <hr class="dropdown-divider">
-            <a class="dropdown-item d-flex align-items-center gap-2 py-2" href="javascript:;">
-              <i class="material-icons-outlined">person_outline</i> Profile
-            </a>
-            <a class="dropdown-item d-flex align-items-center gap-2 py-2" href="javascript:;">
-              <i class="material-icons-outlined">local_bar</i> Setting
-            </a>
-            <a class="dropdown-item d-flex align-items-center gap-2 py-2" href="javascript:;">
-              <i class="material-icons-outlined">dashboard</i> Dashboard
-            </a>
-            <a class="dropdown-item d-flex align-items-center gap-2 py-2" href="javascript:;">
-              <i class="material-icons-outlined">account_balance</i> Earning
-            </a>
-            <a class="dropdown-item d-flex align-items-center gap-2 py-2" href="javascript:;">
-              <i class="material-icons-outlined">cloud_download</i> Downloads
-            </a>
+            <a class="dropdown-item d-flex align-items-center gap-2 py-2" href="#"><i class="material-icons-outlined">person_outline</i> Profile</a>
+            <a class="dropdown-item d-flex align-items-center gap-2 py-2" href="#"><i class="material-icons-outlined">local_bar</i> Setting</a>
+            <a class="dropdown-item d-flex align-items-center gap-2 py-2" href="dashboard.html"><i class="material-icons-outlined">dashboard</i> Dashboard</a>
+            <a class="dropdown-item d-flex align-items-center gap-2 py-2" href="#"><i class="material-icons-outlined">account_balance</i> Earning</a>
+            <a class="dropdown-item d-flex align-items-center gap-2 py-2" href="#"><i class="material-icons-outlined">cloud_download</i> Downloads</a>
             <hr class="dropdown-divider">
-            <a id="logoutBtn" class="dropdown-item d-flex align-items-center gap-2 py-2" href="javascript:;">
+            <a id="logoutBtn" class="dropdown-item d-flex align-items-center gap-2 py-2" href="javascript:void(0);">
               <i class="material-icons-outlined">power_settings_new</i> Logout
             </a>
           </div>
@@ -101,7 +95,7 @@
   <aside class="sidebar-wrapper" data-simplebar="true">
     <div class="sidebar-header">
       <div class="logo-icon">
-        <img src="assets/images/logo-icon.png" class="logo-img" alt="">
+        <img src="assets/images/logo-icon.png" class="logo-img" alt="Logo">
       </div>
       <div class="logo-name flex-grow-1">
         <h5 class="mb-0">Dhanda Book</h5>
@@ -140,22 +134,22 @@
         <div class="ps-3">
           <nav aria-label="breadcrumb">
             <ol class="breadcrumb mb-0 p-0">
-              <li class="breadcrumb-item"><a href="javascript:;"><i class="bx bx-home-alt"></i></a></li>
-              <li class="breadcrumb-item active" aria-current="page">eCommerce</li>
+              <li class="breadcrumb-item"><a href="#"><i class="bx bx-home-alt"></i></a></li>
+              <li class="breadcrumb-item active" aria-current="page">Overview</li>
             </ol>
           </nav>
         </div>
       </div>
 
-      <!-- Dashboard Cards -->
+      <!-- Dashboard Summary Cards -->
       <div class="row row-cols-lg-3 g-4">
         <div class="col">
           <div class="card rounded-4">
             <div class="card-body">
               <div class="d-flex align-items-center gap-3 mb-2">
-                <h2 id="totalUsersYear" class="mb-0">56</h2>
+                <h2 id="totalUsersYear" class="mb-0">0</h2>
                 <p class="dash-lable d-flex align-items-center gap-1 rounded mb-0 bg-success text-success bg-opacity-10">
-                  <span class="material-icons-outlined fs-6">arrow_upward</span>24.7%
+                  <span class="material-icons-outlined fs-6">arrow_upward</span>All Time
                 </p>
               </div>
               <p class="mb-0">Total Users</p>
@@ -167,12 +161,12 @@
           <div class="card rounded-4">
             <div class="card-body">
               <div class="d-flex align-items-center gap-3 mb-2">
-                <h2 id="totalUsersMonth" class="mb-0">27</h2>
-                <p class="dash-lable d-flex align-items-center gap-1 rounded mb-0 bg-danger text-danger bg-opacity-10">
-                  <span class="material-icons-outlined fs-6">arrow_upward</span>18.6%
+                <h2 id="totalUsersMonth" class="mb-0">0</h2>
+                <p class="dash-lable d-flex align-items-center gap-1 rounded mb-0 bg-primary text-primary bg-opacity-10">
+                  <span class="material-icons-outlined fs-6">calendar_today</span>This Month
                 </p>
               </div>
-              <p class="mb-0">Users This Month</p>
+              <p class="mb-0">Users Joined in Last 30 Days</p>
             </div>
           </div>
         </div>
@@ -181,36 +175,50 @@
           <div class="card rounded-4">
             <div class="card-body">
               <div class="d-flex align-items-center gap-3 mb-2">
-                <h2 id="totalUsersWeek" class="mb-0">4</h2>
-                <p class="dash-lable d-flex align-items-center gap-1 rounded mb-0 bg-success text-success bg-opacity-10">
-                  <span class="material-icons-outlined fs-6">arrow_upward</span>42.6%
+                <h2 id="totalUsersWeek" class="mb-0">0</h2>
+                <p class="dash-lable d-flex align-items-center gap-1 rounded mb-0 bg-warning text-warning bg-opacity-10">
+                  <span class="material-icons-outlined fs-6">schedule</span>This Week
                 </p>
               </div>
-              <p class="mb-0">Users This Week</p>
+              <p class="mb-0">Users Joined in Last 7 Days</p>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Transactions Table -->
+      <!-- Users Table -->
       <div class="row g-4 mt-3">
-        <div class="col-lg-8">
+        <div class="col-12">
           <div class="card rounded-4">
             <div class="card-body">
               <div class="d-flex align-items-start justify-content-between mb-3">
-                <h5 class="mb-0">Active Users</h5>
+                <div>
+                  <h5 class="mb-0">Active Users</h5>
+                  <small class="text-muted">Click on any user to view details</small>
+                </div>
               </div>
 
               <div class="table-responsive">
-                <table class="table align-middle mb-0 table-striped">
-                  <thead>
+                <table class="table align-middle mb-0 table-striped table-hover">
+                  <thead class="table-light">
                     <tr>
-                      <th>Name</th>
-                      <th>Id</th>
-                      <th>No of Lots</th>
-                      <th>Last Login</th>
+                      <th><i class="material-icons-outlined align-middle fs-6">email</i> Email</th>
+                      <th><i class="material-icons-outlined align-middle fs-6">fingerprint</i> ID</th>
+                      <th><i class="material-icons-outlined align-middle fs-6">person</i> Username</th>
+                      <th><i class="material-icons-outlined align-middle fs-6">verified</i> Status</th>
+                      <th><i class="material-icons-outlined align-middle fs-6">schedule</i> Last Updated</th>
                     </tr>
                   </thead>
+                  <tbody>
+                    <tr>
+                      <td colspan="5" class="text-center py-5">
+                        <div class="spinner-border text-primary" role="status">
+                          <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p class="mb-0 mt-3 text-muted">Loading users...</p>
+                      </td>
+                    </tr>
+                  </tbody>
                 </table>
               </div>
 
@@ -221,15 +229,15 @@
 
     </div>
   </main>
-  <!-- ================= END MAIN ================= -->
+  <!-- ================= END MAIN CONTENT ================= -->
 
   <!-- ================= FOOTER ================= -->
-  <footer class="page-footer bg-light text-center py-3">
+  <footer class="page-footer bg-light text-center py-3 mt-4">
     <p class="mb-0">© 2025 Dhanda Book. All rights reserved.</p>
   </footer>
   <!-- ================= END FOOTER ================= -->
 
-  <!-- ================= SCRIPTS ================= -->
+  <!-- ========== SCRIPTS ========== -->
   <script src="assets/js/jquery.min.js"></script>
   <script src="assets/js/bootstrap.bundle.min.js"></script>
   <script src="assets/plugins/metismenu/metisMenu.min.js"></script>
@@ -237,7 +245,5 @@
   <script src="assets/js/index-free.js"></script>
   <script src="assets/js/main.js"></script>
   <script type="module" src="js/dashboard.js"></script>
-
 </body>
-
 </html>
