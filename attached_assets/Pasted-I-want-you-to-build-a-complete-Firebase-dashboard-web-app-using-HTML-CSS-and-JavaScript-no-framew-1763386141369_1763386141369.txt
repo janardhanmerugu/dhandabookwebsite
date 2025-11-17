@@ -1,0 +1,68 @@
+I want you to build a complete Firebase dashboard web app using HTML, CSS, and JavaScript (no frameworks).
+
+Features required:
+
+1. Authentication:
+   - Firebase v9 modular SDK
+   - Google Sign-In
+   - Email & Password Login
+   - If login succeeds, redirect to /dashboard.html
+   - If not authenticated, redirect to /login.html
+
+2. Layout:
+   - A left-side drawer (sidebar) with menu items:
+        • Dashboard
+        • Charts
+        • User Data
+        • Logout
+   - Top navigation bar on dashboard & charts pages
+   - Mobile responsive drawer (collapsible)
+
+3. Pages to create:
+   - login.html
+   - dashboard.html
+   - charts.html
+   - script/auth.js        (auth logic)
+   - script/dashboard.js   (dashboard live data)
+   - script/charts.js      (chart rendering)
+   - style.css
+
+4. Dashboard Page:
+   - Show cards with live Firebase Realtime Database values
+   - Show latest logs from database
+   - Auto updates in real time using onValue()
+
+5. Charts Page:
+   - Use Chart.js
+   - Read data from Firebase Realtime Database (use placeholder path)
+   - Line chart + Bar chart
+   - Chart updates live when values change
+
+6. Sidebar Menu Behavior:
+   - If user clicks “Charts”, open charts.html
+   - If user clicks “Dashboard”, open dashboard.html
+   - Logout button should sign out using Firebase and redirect to login.html
+
+7. Firebase Config:
+   - Ask me to paste my Firebase config
+   - Put placeholders like:
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_AUTH_DOMAIN",
+            databaseURL: "YOUR_DATABASE_URL",
+            ...
+        };
+
+8. Deployment:
+   - Make code compatible for hosting on Vercel
+   - No backend required
+
+9. UI:
+   - Clean, modern dashboard design using CSS only
+   - Reusable components
+   - Smooth animations for sidebar
+
+After generating:
+- Explain where to paste my Firebase config
+- Show how to change database paths for dashboard and charts
+- Show how to upload to Vercel
