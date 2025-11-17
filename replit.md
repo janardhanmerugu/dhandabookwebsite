@@ -46,15 +46,20 @@ Preferred communication style: Simple, everyday language.
 ## Real-time Data Synchronization
 
 **Firebase Realtime Database Integration**:
-- `onValue()` listeners for live data updates without manual refresh
-- Real-time dashboard metrics (Total Users, Revenue, Active Sessions, Growth Rate)
-- Live activity logs with automatic updates
+- `onValue()` listeners for live dashboard metrics (Total Users, Revenue, Active Sessions, Server Status)
+- Activity logs use `get()` to analyze user transaction data across the entire `/users` tree
+- Tracks transactions from: lot, buy_transactions, sell_transactions, due_transactions, expenses
+- Each transaction must have `transactionId` (Unix timestamp) for activity tracking
+- Automatically calculates active users in last 7/30 days based on transaction timestamps
 - Chart data synchronized in real-time from database
 
 **Data Flow**:
-- Database references defined for specific paths (stats/users, stats/revenue, etc.)
-- Listener callbacks update DOM elements when database values change
-- No polling required - Firebase handles real-time push updates
+- Dashboard cards use `onValue()` listeners for real-time stats updates
+- Activity logs use `get()` to fetch user transaction data
+- Activity tracking scans user transaction sections: lot, buy_transactions, sell_transactions, due_transactions, expenses
+- Each transaction's `transactionId` (timestamp) is used to determine recent activity
+- Auto-refresh every 60 seconds for activity logs
+- Displays 15 most recent activities sorted by timestamp
 
 ## Data Visualization
 
@@ -144,10 +149,20 @@ All Firebase modules loaded via CDN from `https://www.gstatic.com/firebasejs/9.2
 
 # Recent Changes (November 17, 2025)
 
+## Navigation & Deployment Fixes
 - Fixed all navigation paths from absolute to relative (e.g., `/login.html` → `./login.html`)
 - This ensures proper routing when deployed to Vercel or subdirectories
 - Updated User Data link alert to indicate it's a future feature
 - All authentication redirects now work correctly across hosting environments
+
+## User Activity Tracking Implementation
+- Implemented intelligent activity log system that scans user transaction data
+- Activity logs now show real user transactions instead of static log entries
+- Tracks 5 transaction types: lot, purchases, sales, due payments, and expenses
+- Displays username/email, action type, timestamp, and transaction amount
+- Auto-refreshes every 60 seconds
+- Shows 15 most recent activities sorted by newest first
+- Calculates active users in last 7 and 30 days based on transaction timestamps
 
 # Future Features
 

@@ -1,0 +1,110 @@
+// ✅ Fetch users from Firebase
+async function fetchAndDisplayUsers(customDays = 7) {
+  const usersRef = ref(db, "users");
+  try {
+    const snapshot = await get(usersRef);
+
+    if (!snapshot.exists()) {
+      console.log("No users found");
+      updateTable([]);
+      return;
+    }
+
+    const usersData = snapshot.val();
+    const allUserIds = Object.keys(usersData);
+    const now = Date.now();
+
+    let totalUsersYear = allUserIds.length;
+    let totalUsersMonth = 0;
+    let totalUsersWeek = 0;
+
+    const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
+    const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
+
+    const userList = [];
+
+    allUserIds.forEach((uid) => {
+      const user = usersData[uid];
+      let email = "";
+      let username = "";
+      let lastUpdate = 0;
+
+
+      if (user.profile) {
+       const profileKeys = Object.keys(user.profile);
+       if (profileKeys.length > 0) {
+          const firstProfileKey = profileKeys[0];
+          const profileData = user.profile[firstProfileKey];
+          email = profileData.email || "";
+          username = profileData.username || "";
+        }
+      }
+
+      // ✅ Profile data (child under 'profile' is a unique key)
+  
+
+      // Sections containing transactions
+      const sections = [
+        "lot",
+        "buy_transactions",
+        "sell_transactions",
+        "due_transactions",
+        "expenses",
+      ];
+
+      const times = [];
+
+      sections.forEach((section) => {
+        if (user[section]) {
+          Object.values(user[section]).forEach((tx) => {
+            if (tx.transactionId) {
+              const t = Number(tx.transactionId);
+              if (!isNaN(t)) times.push(t);
+            }
+          });
+        }
+      });
+
+      lastUpdate = Math.max(...times, 0);
+      if (!lastUpdate) return;
+
+      // Count for 7 / 30 days
+      if (now - lastUpdate <= THIRTY_DAYS_MS) totalUsersMonth++;
+      if (now - lastUpdate <= SEVEN_DAYS_MS) totalUsersWeek++;
+
+      userList.push({
+        uid,
+        email,
+        username,
+        lastUpdate,
+      });
+    });
+
+    // Update dashboard summary
+    document.getElementById("totalUsersYear").innerText = totalUsersYear;
+    document.getElementById("totalUsersMonth").innerText = totalUsersMonth;
+    document.getElementById("totalUsersWeek").innerText = totalUsersWeek;
+
+    // Update user table
+
+    // ✅ Sort by most recent activity
+    userList.sort((a, b) => b.lastUpdate - a.lastUpdate);
+
+    const CUSTOM_DAYS_MS = customDays * 24 * 60 * 60 * 1000;
+    const filteredUsers = userList.filter(user => (now - user.lastUpdate) <= CUSTOM_DAYS_MS);
+
+
+    document.getElementById("userTitle").innerText = "Users = " + filteredUsers.length;
+    // cache for search and full list
+    currentUsers = filteredUsers;
+    fullUserList = userList;
+    updateTable(filteredUsers);
+
+    console.log("=== Summary ===");
+    console.log(`Total users (all time): ${totalUsersYear}`);
+    console.log(`Users active in last 30 days: ${totalUsersMonth}`);
+    console.log(`Users active in last 7 days: ${totalUsersWeek}`);
+  } catch (error) {
+    console.error("Error fetching users:", error);
+  }
+}

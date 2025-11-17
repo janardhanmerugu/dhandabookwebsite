@@ -75,7 +75,7 @@ The app reads data from specific Firebase Realtime Database paths. You can custo
 - `dashboard/activeSessions` - Active sessions count
 - `dashboard/totalRevenue` - Revenue value
 - `dashboard/serverStatus` - Server status text
-- `logs` - Array of log objects with `time` and `message` fields
+- `users` - User data with transaction tracking for activity logs (see structure below)
 
 **Charts Data** (`script/charts.js`):
 - `charts/userActivity` - Array of 7 numbers for line chart (Mon-Sun)
@@ -90,14 +90,31 @@ The app reads data from specific Firebase Realtime Database paths. You can custo
     "totalRevenue": 45678,
     "serverStatus": "Online"
   },
-  "logs": {
-    "log1": {
-      "time": "10:30:15",
-      "message": "User logged in successfully"
-    },
-    "log2": {
-      "time": "10:31:22",
-      "message": "New data uploaded"
+  "users": {
+    "user_id_123": {
+      "profile": {
+        "profile_key_123": {
+          "email": "user@example.com",
+          "username": "john_doe"
+        }
+      },
+      "buy_transactions": {
+        "tx_1": {
+          "transactionId": 1700000000000,
+          "amount": 500,
+          "description": "Purchase item"
+        }
+      },
+      "sell_transactions": {
+        "tx_2": {
+          "transactionId": 1700100000000,
+          "amount": 1200,
+          "description": "Sale item"
+        }
+      },
+      "lot": {},
+      "due_transactions": {},
+      "expenses": {}
     }
   },
   "charts": {
@@ -106,6 +123,16 @@ The app reads data from specific Firebase Realtime Database paths. You can custo
   }
 }
 ```
+
+**Activity Logs Feature:**
+The dashboard automatically tracks and displays the 15 most recent user activities by analyzing transaction data across all users. It monitors:
+- **Lot transactions** (`lot`)
+- **Purchases** (`buy_transactions`)
+- **Sales** (`sell_transactions`)  
+- **Due payments** (`due_transactions`)
+- **Expenses** (`expenses`)
+
+Each transaction must have a `transactionId` (Unix timestamp) for activity tracking. The logs auto-refresh every 60 seconds and display username, action type, and amount.
 
 ## Local Development
 
