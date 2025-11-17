@@ -3,7 +3,7 @@ import { getAuth } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-auth
 import { getDatabase } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js';
 
 const firebaseConfig = {
-    apiKey: "`GOOGLE_API_KEY`",
+    apiKey: "AIzaSyCmaZ_ojXb5Xkg9b5pu4ng0WaNzw42BEwc",
     authDomain: "dhanda-c6f81.firebaseapp.com",
     databaseURL: "https://dhanda-c6f81-default-rtdb.firebaseio.com",
     projectId: "dhanda-c6f81",
