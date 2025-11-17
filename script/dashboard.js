@@ -1,213 +1,261 @@
-import { auth, database } from './firebase-config.js';
-import { onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js';
-import { ref, onValue, get } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js';
+import { auth } from "./firebase-config.js";
+import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
 
+// Initialize database
+const db = getDatabase();
+
+// Cached current visible users for client-side search/filter
+let currentUsers = [];
+
+// Full unfiltered list (all users with activity) to support 'All Users' view
+let fullUserList = [];
+
+// ✅ Auth check
 onAuthStateChanged(auth, (user) => {
-    if (!user) {
-        window.location.href = './login.html';
-    } else {
-        document.getElementById('user-email').textContent = user.email;
-        initDashboard();
-    }
+  if (!user) {
+    window.location.href = "index.html";
+  } else {
+    console.log("User is logged in:", user.email);
+    document.getElementById("user-email").textContent = user.email;
+    fetchAndDisplayUsers();
+  }
 });
 
-const menuToggle = document.getElementById('menu-toggle');
-const sidebar = document.getElementById('sidebar');
-const overlay = document.getElementById('overlay');
-const closeSidebar = document.getElementById('close-sidebar');
-
-menuToggle.addEventListener('click', () => {
-    sidebar.classList.add('active');
-    overlay.classList.add('active');
-});
-
-closeSidebar.addEventListener('click', () => {
-    sidebar.classList.remove('active');
-    overlay.classList.remove('active');
-});
-
-overlay.addEventListener('click', () => {
-    sidebar.classList.remove('active');
-    overlay.classList.remove('active');
-});
-
-document.getElementById('logout-btn').addEventListener('click', async (e) => {
-    e.preventDefault();
-    try {
+// ✅ Logout handler
+document.addEventListener("DOMContentLoaded", () => {
+  const logoutBtn = document.getElementById("logout-btn");
+  if (logoutBtn) {
+    logoutBtn.addEventListener("click", async (e) => {
+      e.preventDefault();
+      try {
         await signOut(auth);
-        window.location.href = './login.html';
-    } catch (error) {
-        console.error('Logout error:', error);
-        alert('Failed to logout. Please try again.');
-    }
+        console.log("User logged out successfully!");
+        window.location.href = "index.html";
+      } catch (error) {
+        console.error("Logout failed:", error);
+        alert("Logout failed: " + error.message);
+      }
+    });
+  }
+
+  // Sidebar toggle
+  const menuToggle = document.getElementById("menu-toggle");
+  const sidebar = document.getElementById("sidebar");
+  const closeSidebar = document.getElementById("close-sidebar");
+  const overlay = document.getElementById("overlay");
+
+  if (menuToggle) {
+    menuToggle.addEventListener("click", () => {
+      sidebar.classList.add("active");
+      overlay.classList.add("active");
+    });
+  }
+
+  if (closeSidebar) {
+    closeSidebar.addEventListener("click", () => {
+      sidebar.classList.remove("active");
+      overlay.classList.remove("active");
+    });
+  }
+
+  if (overlay) {
+    overlay.addEventListener("click", () => {
+      sidebar.classList.remove("active");
+      overlay.classList.remove("active");
+    });
+  }
 });
 
-document.getElementById('user-data-link').addEventListener('click', (e) => {
-    e.preventDefault();
-    alert('User Data page - This feature is planned for future development. Currently displays user authentication status.');
-});
-
-function initDashboard() {
-    const totalUsersRef = ref(database, 'dashboard/totalUsers');
-    onValue(totalUsersRef, (snapshot) => {
-        const value = snapshot.val();
-        document.getElementById('total-users').textContent = value || 0;
-    }, (error) => {
-        console.error('Error reading totalUsers:', error);
-    });
-
-    const activeSessionsRef = ref(database, 'dashboard/activeSessions');
-    onValue(activeSessionsRef, (snapshot) => {
-        const value = snapshot.val();
-        document.getElementById('active-sessions').textContent = value || 0;
-    }, (error) => {
-        console.error('Error reading activeSessions:', error);
-    });
-
-    const totalRevenueRef = ref(database, 'dashboard/totalRevenue');
-    onValue(totalRevenueRef, (snapshot) => {
-        const value = snapshot.val();
-        document.getElementById('total-revenue').textContent = value ? `$${value}` : '$0';
-    }, (error) => {
-        console.error('Error reading totalRevenue:', error);
-    });
-
-    const serverStatusRef = ref(database, 'dashboard/serverStatus');
-    onValue(serverStatusRef, (snapshot) => {
-        const value = snapshot.val();
-        document.getElementById('server-status').textContent = value || 'Online';
-    }, (error) => {
-        console.error('Error reading serverStatus:', error);
-    });
-
-    fetchAndDisplayUserActivity();
-    
-    setInterval(() => {
-        fetchAndDisplayUserActivity();
-    }, 60000);
+// ✅ Helper: format timestamp to readable date
+function formatDate(timestamp) {
+  const date = new Date(timestamp);
+  return date.toLocaleString('en-IN', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
 }
 
-async function fetchAndDisplayUserActivity() {
-    const usersRef = ref(database, 'users');
-    const logsContainer = document.getElementById('logs-container');
-    
-    try {
-        const snapshot = await get(usersRef);
-        
-        if (!snapshot.exists()) {
-            console.log('No users found in database');
-            logsContainer.innerHTML = '<div class="log-item"><span class="log-time">--:--:--</span><span class="log-message">No user activity data available. Add users to /users in Firebase.</span></div>';
-            return;
-        }
-        
-        const usersData = snapshot.val();
-        const allUserIds = Object.keys(usersData);
-        const now = Date.now();
-        const activities = [];
-        
-        const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
-        const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
-        
-        let activeUsersWeek = 0;
-        let activeUsersMonth = 0;
-        
-        allUserIds.forEach((uid) => {
-            const user = usersData[uid];
-            let email = '';
-            let username = '';
-            
-            if (user.profile) {
-                const profileKeys = Object.keys(user.profile);
-                if (profileKeys.length > 0) {
-                    const firstProfileKey = profileKeys[0];
-                    const profileData = user.profile[firstProfileKey];
-                    email = profileData.email || '';
-                    username = profileData.username || uid.substring(0, 8);
-                }
-            }
-            
-            if (!username) {
-                username = uid.substring(0, 8);
-            }
-            
-            const sections = [
-                { name: 'lot', label: 'Lot transaction' },
-                { name: 'buy_transactions', label: 'Purchase' },
-                { name: 'sell_transactions', label: 'Sale' },
-                { name: 'due_transactions', label: 'Due payment' },
-                { name: 'expenses', label: 'Expense' }
-            ];
-            
-            sections.forEach((section) => {
-                if (user[section.name]) {
-                    Object.values(user[section.name]).forEach((tx) => {
-                        if (tx.transactionId) {
-                            const timestamp = Number(tx.transactionId);
-                            if (!isNaN(timestamp)) {
-                                activities.push({
-                                    timestamp,
-                                    username,
-                                    email,
-                                    action: section.label,
-                                    amount: tx.amount || tx.total || 0
-                                });
-                                
-                                if (now - timestamp <= SEVEN_DAYS_MS) {
-                                    activeUsersWeek++;
-                                }
-                                if (now - timestamp <= THIRTY_DAYS_MS) {
-                                    activeUsersMonth++;
-                                }
-                            }
-                        }
-                    });
-                }
-            });
-        });
-        
-        activities.sort((a, b) => b.timestamp - a.timestamp);
-        
-        const recentActivities = activities.slice(0, 15);
-        
-        logsContainer.innerHTML = '';
-        
-        if (recentActivities.length === 0) {
-            logsContainer.innerHTML = '<div class="log-item"><span class="log-time">--:--:--</span><span class="log-message">No recent activity. User transactions will appear here.</span></div>';
-            return;
-        }
-        
-        recentActivities.forEach(activity => {
-            const logItem = document.createElement('div');
-            logItem.className = 'log-item';
-            
-            const date = new Date(activity.timestamp);
-            const logTime = document.createElement('span');
-            logTime.className = 'log-time';
-            logTime.textContent = date.toLocaleTimeString('en-US', { 
-                hour: '2-digit', 
-                minute: '2-digit',
-                hour12: true 
-            });
-            
-            const logMessage = document.createElement('span');
-            logMessage.className = 'log-message';
-            const userDisplay = activity.username || activity.email || 'User';
-            const amountDisplay = activity.amount ? ` - $${activity.amount}` : '';
-            logMessage.textContent = `${userDisplay}: ${activity.action}${amountDisplay}`;
-            
-            logItem.appendChild(logTime);
-            logItem.appendChild(logMessage);
-            logsContainer.appendChild(logItem);
-        });
-        
-        console.log(`📊 Activity Summary:`);
-        console.log(`Total users: ${allUserIds.length}`);
-        console.log(`Recent activities: ${activities.length}`);
-        console.log(`Active last 7 days: ${activeUsersWeek} transactions`);
-        console.log(`Active last 30 days: ${activeUsersMonth} transactions`);
-        
-    } catch (error) {
-        console.error('Error fetching user activity:', error);
-        logsContainer.innerHTML = '<div class="log-item"><span class="log-time">Error</span><span class="log-message">Failed to load activity. Check Firebase database configuration.</span></div>';
+// ✅ Fetch users from Firebase
+async function fetchAndDisplayUsers(customDays = 7) {
+  const usersRef = ref(db, "users");
+  try {
+    const snapshot = await get(usersRef);
+
+    if (!snapshot.exists()) {
+      console.log("No users found");
+      updateTable([]);
+      return;
     }
+
+    const usersData = snapshot.val();
+    const allUserIds = Object.keys(usersData);
+    const now = Date.now();
+
+    let totalUsersYear = allUserIds.length;
+    let totalUsersMonth = 0;
+    let totalUsersWeek = 0;
+
+    const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
+    const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
+
+    const userList = [];
+
+    allUserIds.forEach((uid) => {
+      const user = usersData[uid];
+      let email = "";
+      let username = "";
+      let lastUpdate = 0;
+
+      // ✅ Extract profile data
+      if (user.profile) {
+        const profileKeys = Object.keys(user.profile);
+        if (profileKeys.length > 0) {
+          const firstProfileKey = profileKeys[0];
+          const profileData = user.profile[firstProfileKey];
+          email = profileData.email || "";
+          username = profileData.username || "";
+        }
+      }
+
+      // Sections containing transactions
+      const sections = [
+        "lot",
+        "buy_transactions",
+        "sell_transactions",
+        "due_transactions",
+        "expenses",
+      ];
+
+      const times = [];
+
+      sections.forEach((section) => {
+        if (user[section]) {
+          Object.values(user[section]).forEach((tx) => {
+            if (tx.transactionId) {
+              const t = Number(tx.transactionId);
+              if (!isNaN(t)) times.push(t);
+            }
+          });
+        }
+      });
+
+      lastUpdate = Math.max(...times, 0);
+      if (!lastUpdate) return;
+
+      // Count for 7 / 30 days
+      if (now - lastUpdate <= THIRTY_DAYS_MS) totalUsersMonth++;
+      if (now - lastUpdate <= SEVEN_DAYS_MS) totalUsersWeek++;
+
+      userList.push({
+        uid,
+        email,
+        username,
+        lastUpdate,
+      });
+    });
+
+    // Update dashboard summary
+    document.getElementById("totalUsersYear").innerText = totalUsersYear;
+    document.getElementById("totalUsersMonth").innerText = totalUsersMonth;
+    document.getElementById("totalUsersWeek").innerText = totalUsersWeek;
+
+    // ✅ Sort by most recent activity
+    userList.sort((a, b) => b.lastUpdate - a.lastUpdate);
+
+    const CUSTOM_DAYS_MS = customDays * 24 * 60 * 60 * 1000;
+    const filteredUsers = userList.filter(user => (now - user.lastUpdate) <= CUSTOM_DAYS_MS);
+
+    document.getElementById("userTitle").innerText = "Users = " + filteredUsers.length;
+    
+    // cache for search and full list
+    currentUsers = filteredUsers;
+    fullUserList = userList;
+    updateTable(filteredUsers);
+
+    console.log("=== Summary ===");
+    console.log(`Total users (all time): ${totalUsersYear}`);
+    console.log(`Users active in last 30 days: ${totalUsersMonth}`);
+    console.log(`Users active in last 7 days: ${totalUsersWeek}`);
+  } catch (error) {
+    console.error("Error fetching users:", error);
+    alert("Error loading users: " + error.message);
+  }
+}
+
+// ✅ Refresh button click handler
+const btnRefresh = document.getElementById("btnRefresh");
+if (btnRefresh) {
+  btnRefresh.addEventListener("click", () => {
+    const daysInput = document.getElementById("daysInput").value.trim();
+    const days = parseInt(daysInput) || 7; // default 7 if invalid
+    fetchAndDisplayUsers(days);
+  });
+}
+
+// ✅ Live search: filter currentUsers by input
+const userSearchEl = document.getElementById('userSearch');
+if (userSearchEl) {
+  userSearchEl.addEventListener('input', (e) => {
+    const q = (e.target.value || '').trim().toLowerCase();
+    if (!q) {
+      // empty -> show all cached users
+      updateTable(currentUsers);
+      document.getElementById("userTitle").innerText = "Users = " + currentUsers.length;
+      return;
+    }
+
+    const matched = currentUsers.filter(u => {
+      const email = (u.email || '').toLowerCase();
+      const uid = (u.uid || '').toLowerCase();
+      const username = (u.username || '').toLowerCase();
+      const last = formatDate(u.lastUpdate).toLowerCase();
+      return email.includes(q) || uid.includes(q) || username.includes(q) || last.includes(q);
+    });
+
+    updateTable(matched);
+    document.getElementById("userTitle").innerText = "Users = " + matched.length;
+  });
+}
+
+// ✅ All Users button: show the complete unfiltered user list
+const btnAllUsers = document.getElementById('btnAllUsers');
+if (btnAllUsers) {
+  btnAllUsers.addEventListener('click', () => {
+    // show full list (sorted)
+    currentUsers = fullUserList.slice();
+    updateTable(currentUsers);
+    document.getElementById("userTitle").innerText = "Users = " + currentUsers.length;
+    // clear search input
+    if (userSearchEl) userSearchEl.value = '';
+    // reset days to 7
+    document.getElementById("daysInput").value = '7';
+  });
+}
+
+// ✅ Render user data in table
+function updateTable(users) {
+  const tbody = document.querySelector("table tbody");
+  tbody.innerHTML = "";
+
+  if (!users.length) {
+    tbody.innerHTML = `
+      <tr><td colspan="4" class="text-center py-4 text-muted">No users found</td></tr>
+    `;
+    return;
+  }
+
+  users.forEach((user) => {
+    const row = document.createElement("tr");
+    row.innerHTML = `
+      <td>${user.email || "-"}</td>
+      <td>${user.uid}</td>
+      <td>${user.username || "-"}</td>
+      <td>${formatDate(user.lastUpdate)}</td>
+    `;
+    tbody.appendChild(row);
+  });
 }

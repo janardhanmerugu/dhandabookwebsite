@@ -46,52 +46,67 @@
                 <div class="stats-grid">
                     <div class="stat-card">
                         <div class="stat-header">
-                            <h3>Total Users</h3>
+                            <h3>Total Users (All Time)</h3>
                             <span class="stat-icon">👥</span>
                         </div>
-                        <div class="stat-value" id="total-users">0</div>
+                        <div class="stat-value" id="totalUsersYear">0</div>
+                        <div class="stat-change positive">Active</div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <h3>Active Last 30 Days</h3>
+                            <span class="stat-icon">📅</span>
+                        </div>
+                        <div class="stat-value" id="totalUsersMonth">0</div>
                         <div class="stat-change positive">Live</div>
                     </div>
 
                     <div class="stat-card">
                         <div class="stat-header">
-                            <h3>Active Sessions</h3>
+                            <h3>Active Last 7 Days</h3>
                             <span class="stat-icon">⚡</span>
                         </div>
-                        <div class="stat-value" id="active-sessions">0</div>
-                        <div class="stat-change positive">Live</div>
-                    </div>
-
-                    <div class="stat-card">
-                        <div class="stat-header">
-                            <h3>Total Revenue</h3>
-                            <span class="stat-icon">💰</span>
-                        </div>
-                        <div class="stat-value" id="total-revenue">$0</div>
-                        <div class="stat-change positive">Live</div>
-                    </div>
-
-                    <div class="stat-card">
-                        <div class="stat-header">
-                            <h3>Server Status</h3>
-                            <span class="stat-icon">🖥️</span>
-                        </div>
-                        <div class="stat-value" id="server-status">Online</div>
+                        <div class="stat-value" id="totalUsersWeek">0</div>
                         <div class="stat-change positive">Live</div>
                     </div>
                 </div>
 
-                <div class="logs-section">
-                    <div class="logs-card">
-                        <div class="logs-header">
-                            <h3>Latest Activity Logs</h3>
-                            <span class="live-badge">🔴 Live</span>
-                        </div>
-                        <div class="logs-container" id="logs-container">
-                            <div class="log-item">
-                                <span class="log-time">--:--:--</span>
-                                <span class="log-message">Waiting for data...</span>
+                <!-- User Management Section -->
+                <div class="users-section">
+                    <div class="users-card">
+                        <div class="users-header">
+                            <div>
+                                <h3 id="userTitle">Users = 0</h3>
+                                <p class="users-subtitle">Filter by activity period</p>
                             </div>
+                            <div class="users-controls">
+                                <input type="number" id="daysInput" class="days-input" placeholder="Days" value="7" min="1">
+                                <button id="btnRefresh" class="btn-refresh">Refresh</button>
+                                <button id="btnAllUsers" class="btn-all-users">All Users</button>
+                            </div>
+                        </div>
+
+                        <div class="search-box">
+                            <input type="text" id="userSearch" class="search-input" placeholder="🔍 Search by email, username, UID, or date...">
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="users-table">
+                                <thead>
+                                    <tr>
+                                        <th>Email</th>
+                                        <th>UID</th>
+                                        <th>Username</th>
+                                        <th>Last Update</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td colspan="4" class="text-center py-4 text-muted">Loading users...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>

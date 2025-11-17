@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Charts - Firebase Dashboard</title>
     <link rel="stylesheet" href="style.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts@latest"></script>
 </head>
 <body>
     <div class="app-container">
@@ -47,22 +47,16 @@
                 <div class="charts-grid">
                     <div class="chart-card">
                         <div class="chart-header">
-                            <h3>User Activity (Line Chart)</h3>
-                            <span class="live-badge">🔴 Live</span>
+                            <h3>Weekly Active Users</h3>
                         </div>
-                        <div class="chart-container">
-                            <canvas id="lineChart"></canvas>
-                        </div>
+                        <div class="chart-container" id="monthlyUsersChart"></div>
                     </div>
 
                     <div class="chart-card">
                         <div class="chart-header">
-                            <h3>Revenue Breakdown (Bar Chart)</h3>
-                            <span class="live-badge">🔴 Live</span>
+                            <h3>Cumulative Users by Week</h3>
                         </div>
-                        <div class="chart-container">
-                            <canvas id="barChart"></canvas>
-                        </div>
+                        <div class="chart-container" id="cumulativeUsersChart"></div>
                     </div>
                 </div>
             </div>
