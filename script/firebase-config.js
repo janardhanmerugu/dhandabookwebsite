@@ -3,13 +3,14 @@ import { getAuth } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-auth
 import { getDatabase } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js';
 
 const firebaseConfig = {
-    apiKey: "YOUR_API_KEY",
-    authDomain: "YOUR_AUTH_DOMAIN",
-    databaseURL: "YOUR_DATABASE_URL",
-    projectId: "YOUR_PROJECT_ID",
-    storageBucket: "YOUR_STORAGE_BUCKET",
-    messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-    appId: "YOUR_APP_ID"
+    apiKey: "`GOOGLE_API_KEY`",
+    authDomain: "dhanda-c6f81.firebaseapp.com",
+    databaseURL: "https://dhanda-c6f81-default-rtdb.firebaseio.com",
+    projectId: "dhanda-c6f81",
+    storageBucket: "dhanda-c6f81.firebasestorage.app",
+    messagingSenderId: "1078087902179",
+    appId: "1:1078087902179:web:7291c62f89528e732176d6",
+    measurementId: "G-QG764Y58JM"
 };
 
 const app = initializeApp(firebaseConfig);
