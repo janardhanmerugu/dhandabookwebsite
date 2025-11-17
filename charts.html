@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Charts - Firebase Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+    <div class="app-container">
+        <div class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h2>Dashboard</h2>
+                <button class="close-sidebar" id="close-sidebar">✕</button>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="dashboard.html" class="nav-item">
+                    <span class="nav-icon">📊</span>
+                    <span class="nav-text">Dashboard</span>
+                </a>
+                <a href="charts.html" class="nav-item active">
+                    <span class="nav-icon">📈</span>
+                    <span class="nav-text">Charts</span>
+                </a>
+                <a href="#" class="nav-item" id="user-data-link">
+                    <span class="nav-icon">👤</span>
+                    <span class="nav-text">User Data</span>
+                </a>
+                <a href="#" class="nav-item" id="logout-btn">
+                    <span class="nav-icon">🚪</span>
+                    <span class="nav-text">Logout</span>
+                </a>
+            </nav>
+        </div>
+
+        <div class="main-content">
+            <div class="topbar">
+                <button class="menu-toggle" id="menu-toggle">☰</button>
+                <h1>Analytics Charts</h1>
+                <div class="user-info">
+                    <span id="user-email">Loading...</span>
+                </div>
+            </div>
+
+            <div class="content">
+                <div class="charts-grid">
+                    <div class="chart-card">
+                        <div class="chart-header">
+                            <h3>User Activity (Line Chart)</h3>
+                            <span class="live-badge">🔴 Live</span>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="lineChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="chart-card">
+                        <div class="chart-header">
+                            <h3>Revenue Breakdown (Bar Chart)</h3>
+                            <span class="live-badge">🔴 Live</span>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="barChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="overlay" id="overlay"></div>
+
+    <script type="module" src="script/charts.js"></script>
+</body>
+</html>

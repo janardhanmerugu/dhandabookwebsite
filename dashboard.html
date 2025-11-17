@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Firebase Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <div class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h2>Dashboard</h2>
+                <button class="close-sidebar" id="close-sidebar">✕</button>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="dashboard.html" class="nav-item active">
+                    <span class="nav-icon">📊</span>
+                    <span class="nav-text">Dashboard</span>
+                </a>
+                <a href="charts.html" class="nav-item">
+                    <span class="nav-icon">📈</span>
+                    <span class="nav-text">Charts</span>
+                </a>
+                <a href="#" class="nav-item" id="user-data-link">
+                    <span class="nav-icon">👤</span>
+                    <span class="nav-text">User Data</span>
+                </a>
+                <a href="#" class="nav-item" id="logout-btn">
+                    <span class="nav-icon">🚪</span>
+                    <span class="nav-text">Logout</span>
+                </a>
+            </nav>
+        </div>
+
+        <div class="main-content">
+            <div class="topbar">
+                <button class="menu-toggle" id="menu-toggle">☰</button>
+                <h1>Dashboard Overview</h1>
+                <div class="user-info">
+                    <span id="user-email">Loading...</span>
+                </div>
+            </div>
+
+            <div class="content">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <h3>Total Users</h3>
+                            <span class="stat-icon">👥</span>
+                        </div>
+                        <div class="stat-value" id="total-users">0</div>
+                        <div class="stat-change positive">Live</div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <h3>Active Sessions</h3>
+                            <span class="stat-icon">⚡</span>
+                        </div>
+                        <div class="stat-value" id="active-sessions">0</div>
+                        <div class="stat-change positive">Live</div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <h3>Total Revenue</h3>
+                            <span class="stat-icon">💰</span>
+                        </div>
+                        <div class="stat-value" id="total-revenue">$0</div>
+                        <div class="stat-change positive">Live</div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <h3>Server Status</h3>
+                            <span class="stat-icon">🖥️</span>
+                        </div>
+                        <div class="stat-value" id="server-status">Online</div>
+                        <div class="stat-change positive">Live</div>
+                    </div>
+                </div>
+
+                <div class="logs-section">
+                    <div class="logs-card">
+                        <div class="logs-header">
+                            <h3>Latest Activity Logs</h3>
+                            <span class="live-badge">🔴 Live</span>
+                        </div>
+                        <div class="logs-container" id="logs-container">
+                            <div class="log-item">
+                                <span class="log-time">--:--:--</span>
+                                <span class="log-message">Waiting for data...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="overlay" id="overlay"></div>
+
+    <script type="module" src="script/dashboard.js"></script>
+</body>
+</html>
