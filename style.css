@@ -371,6 +371,36 @@ body {
     padding: 30px;
 }
 
+/* Left column layout for userdata page */
+.two-column {
+    display: flex;
+    gap: 20px;
+}
+
+.left-column {
+    width: 340px;
+    flex-shrink: 0;
+}
+
+.right-column {
+    flex: 1;
+}
+
+.left-panel {
+    background: white;
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+    padding: 8px;
+    height: 72vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.user-list-container { overflow-y: auto; margin-top: 8px; padding-top:8px; border-top:1px solid var(--border-color); }
+.user-list .user-item { padding: 8px 12px; border-bottom: 1px solid var(--border-color); }
+.user-item .user-email { font-weight:600; color:var(--primary-color); }
+.user-item .user-uid { color:var(--text-secondary); font-size:12px; }
+
 .stats-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -668,6 +698,61 @@ body {
 .text-muted {
     color: var(--text-secondary);
 }
+
+/* Lot status colors used in userdata right-panel */
+.lot-status {
+    font-weight: 700;
+}
+.lot-status.active {
+    color: #1e8e3e; /* green */
+}
+.lot-status.inactive {
+    color: #d93025; /* red */
+}
+
+/* Subscription card in userdata right panel */
+.subscription-card {
+    background: #ffffff;
+    border: 1px solid var(--border-color);
+    padding: 10px 12px;
+    border-radius: 8px;
+    margin-bottom: 12px;
+    box-shadow: var(--shadow);
+}
+.subscription-card p {
+    margin: 0;
+    font-size: 14px;
+    color: var(--text-secondary);
+}
+
+/* Right header layout: name on top, trial summary row below */
+#right-header {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.subscription-summary {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+.subscription-summary .item {
+    background: #f5f7fa;
+    border: 1px solid var(--border-color);
+    padding: 6px 8px;
+    border-radius: 8px;
+}
+.subscription-summary .status-badge {
+    font-weight:700;
+    padding:4px 8px;
+    border-radius:12px;
+    font-size:12px;
+}
+.subscription-summary .status-badge.active { background:#e6f4ea; color:#1e8e3e; }
+.subscription-summary .status-badge.inactive { background:#fde7e7; color:#d93025; }
 
 .charts-grid {
     display: grid;
