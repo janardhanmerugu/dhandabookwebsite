@@ -408,6 +408,34 @@ body {
     margin-bottom: 30px;
 }
 
+/* Remove dots */
+.user-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+/* Card Box */
+.card-box {
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  padding: 16px;
+  width: 280px;
+  flex-shrink: 0;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+}
+
+/* Left user list container */
+.user-list-container {
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  padding: 10px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+
 .stat-card {
     background: white;
     padding: 24px;
