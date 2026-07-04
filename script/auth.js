@@ -1,6 +1,5 @@
 import { auth } from './firebase-config.js';
 import { 
-    signInWithEmailAndPassword,
     signInWithPopup,
     GoogleAuthProvider,
     onAuthStateChanged
@@ -41,23 +40,4 @@ googleSigninBtn.addEventListener('click', async () => {
     }
 });
 
-// Email/Password Sign-In
-document.getElementById('email-login-form').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    
-    const email = document.getElementById('email').value;
-    const password = document.getElementById('password').value;
-    
-    try {
-        await signInWithEmailAndPassword(auth, email, password);
-    } catch (error) {
-        console.error('Login error:', error);
-        if (error.code === 'auth/invalid-credential' || error.code === 'auth/user-not-found') {
-            showError('Invalid email or password. Please try again.');
-        } else if (error.code === 'auth/wrong-password') {
-            showError('Incorrect password. Please try again.');
-        } else {
-            showError(error.message);
-        }
-    }
-});
+
