@@ -45,6 +45,7 @@ const lotFilter = document.getElementById('lot-filter');
 const buyFilter = document.getElementById('buy-filter');
 const sellFilter = document.getElementById('sell-filter');
 const dateFilter = document.getElementById('date-filter');
+const userCount = document.getElementById('analytics-user-count');
 const dateFrom = document.getElementById('date-from');
 const dateTo = document.getElementById('date-to');
 const customDateGroup = document.getElementById('custom-date-group');
@@ -464,6 +465,7 @@ function renderUserTable(users) {
   const pageItems = users.slice(startIndex, startIndex + STATE.pageSize);
 
   analyticsTableBody.innerHTML = '';
+  userCount.textContent = `Showing ${numberFormatter.format(users.length)} users`;
 
   if (!pageItems.length) {
     analyticsTableBody.innerHTML = '<tr><td colspan="8" class="text-center py-4 text-muted">No matching users found.</td></tr>';

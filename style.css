@@ -832,10 +832,17 @@ body {
 
 .table-pagination {
     display: flex;
-    justify-content: flex-end;
+    justify-content: space-between;
     align-items: center;
     gap: 12px;
     padding: 16px 24px 20px;
+}
+
+.table-user-count {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin-right: auto;
 }
 
 .pagination-button {
