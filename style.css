@@ -852,6 +852,10 @@ body {
     font-weight: 700;
 }
 
+.table-user-avatar[hidden] {
+    display: none;
+}
+
 .analytics-row td {
     vertical-align: middle;
 }
