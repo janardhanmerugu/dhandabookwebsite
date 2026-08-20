@@ -257,7 +257,7 @@ function buildAnalytics() {
       buysByUser.set(uid, arr);
     });
 
-    // ---- Sell transactions ----
+    // ---- Sell transactions --
     const sellEntries = Object.entries(userNode?.sell_transactions || {});
     sellEntries.forEach(([txId, tx]) => {
       const quantity = safeNumber(tx.quantity || tx.qty || 0);
