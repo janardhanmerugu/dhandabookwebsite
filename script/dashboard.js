@@ -645,7 +645,7 @@ function openUserModal(userId) {
   if (user.isHighlyActive) modalUserBadge.classList.add('badge--high');
 
   userInfoGrid.innerHTML = `
-    <div><strong>User ID</strong><span>${user.uid}</span></div>
+    <div><strong>User ID</strong><span class="user-id-value">${user.uid}</span></div>
     <div><strong>Name</strong><span>${user.name || 'Not available'}</span></div>
     <div><strong>Business Name</strong><span>${user.businessName || 'Not available'}</span></div>
     <div><strong>Phone</strong><span>${user.phone || 'Not available'}</span></div>

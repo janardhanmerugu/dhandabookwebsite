@@ -1031,6 +1031,11 @@ body {
     font-weight: 500;
 }
 
+.info-grid .user-id-value {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+}
+
 .transaction-list {
     list-style: none;
     display: flex;
