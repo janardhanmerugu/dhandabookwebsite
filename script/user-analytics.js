@@ -106,6 +106,13 @@ const toDisplayName = (user) => {
   return normalizeString(value) || user.uid || 'Unknown User';
 };
 
+const getUserInitials = (user) => toDisplayName(user)
+  .split(/\s+/)
+  .filter(Boolean)
+  .slice(0, 2)
+  .map((part) => part.charAt(0).toUpperCase())
+  .join('') || '?';
+
 const getUserId = (user) => user && (user.uid || user.userId || user.id || user.user_id || 'unknown');
 
 // ------------------------------
@@ -479,11 +486,12 @@ function renderUserTable(users) {
   pageItems.forEach((user) => {
     const row = document.createElement('tr');
     row.classList.add('analytics-row');
+    const initials = getUserInitials(user);
     const photoMarkup = user.photoUrl
-      ? `<img class="table-user-photo" src="${user.photoUrl}" alt="" loading="lazy" onerror="this.hidden=true">`
+      ? `<img class="table-user-photo" src="${user.photoUrl}" alt="" loading="lazy" onerror="this.hidden=true; this.nextElementSibling.hidden=false">`
       : '';
     row.innerHTML = `
-      <td><button class="table-user-button" data-user-id="${user.uid}">${photoMarkup}<span>${toDisplayName(user)}</span></button></td>
+      <td><button class="table-user-button" data-user-id="${user.uid}">${photoMarkup}<span class="table-user-avatar"${user.photoUrl ? ' hidden' : ''}>${initials}</span><span>${toDisplayName(user)}</span></button></td>
       <td>${numberFormatter.format(user.lots)}</td>
       <td>${numberFormatter.format(user.buyTransactions)}</td>
       <td>${numberFormatter.format(user.sellTransactions)}</td>
