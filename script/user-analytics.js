@@ -2,12 +2,23 @@ import { auth, database } from './firebase-config.js';
 import { onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js';
 import { ref, get } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js';
 
+// ------------------------------
+// Basic rules for "Highly Active" users
+// Example: a user is highly active if they have:
+// - 5 or more lots
+// - 10 or more buy transactions
+// - 10 or more sell transactions
+// ------------------------------
 const DEFAULT_ACTIVITY_THRESHOLD = {
   lots: 5,
   buys: 10,
   sells: 10
 };
 
+// ------------------------------
+// Global app state for this page
+// This keeps the current users, filtered users, and page state in one place.
+// ------------------------------
 const STATE = {
   users: [],
   filteredUsers: [],
@@ -96,45 +107,40 @@ const toDisplayName = (user) => {
 
 const getUserId = (user) => user && (user.uid || user.userId || user.id || user.user_id || 'unknown');
 
-const getRecordOwnerId = (record) => {
-  if (!record || typeof record !== 'object') return null;
+// ------------------------------
+// FIX: your Realtime Database data model is:
+//   users/{uid}/lot/{lotId}
+//   users/{uid}/buy_transactions/{txId}   (has a "clientId" = the shop's customer, NOT the app user)
+//   users/{uid}/sell_transactions/{txId}  (has a "customerId" = the shop's customer, NOT the app user)
+//
+// The previous version tried to guess a "real owner" for every record by
+// checking fields like clientId/customerId/createdBy/etc. Those fields are
+// business-entity IDs (who the sale was made to), not Firebase Auth user IDs.
+// That caused every distinct clientId/customerId to spawn a *phantom user*
+// in the analytics (39 real users -> 209 "users" once transactions were
+// scanned). Ownership under Realtime Database is 100% determined by the
+// path itself: whichever {uid} the record lives under is the owner. Full stop.
+// ------------------------------
 
-  const possibleIds = [
-    record.userId,
-    record.uid,
-    record.appUserId,
-    record.accountId,
-    record.ownerId,
-    record.user_id,
-    record.clientId,
-    record.customerId,
-    record.createdBy,
-    record.created_by,
-    record.user_uid,
-    record.userUID,
-    record.owner_uid,
-    record.account_owner_id
-  ];
-
-  for (const id of possibleIds) {
-    if (id && String(id).trim()) return String(id).trim();
-  }
-
-  return null;
-};
-
-const getUserProfileInfo = (user, uid) => {
-  const profile = user?.profile ?? {};
-  const profileEntry = Object.values(profile)[0] || {};
+// ------------------------------
+// FIX: profile is a FLAT object directly under users/{uid}/profile, e.g.
+//   { businessName, email, phoneNumber, username, ... }
+// The previous code did `Object.values(profile)[0]`, assuming profile was
+// keyed by some inner id (like { someId: { businessName, email, ... } }).
+// That grabbed the wrong field entirely (often the empty "address" string),
+// which is why names/emails/phones were showing blank or wrong.
+// ------------------------------
+const getUserProfileInfo = (userNode, uid) => {
+  const profile = userNode?.profile || {};
 
   return {
     uid,
     userId: uid,
-    name: normalizeString(profileEntry.name || profileEntry.fullName || profileEntry.username || profileEntry.displayName || user?.name),
-    businessName: normalizeString(profileEntry.businessName || profileEntry.business_name || profileEntry.companyName || user?.businessName || user?.business_name),
-    phone: normalizeString(profileEntry.phone || profileEntry.mobile || profileEntry.contact || user?.phone || user?.mobile),
-    email: normalizeString(profileEntry.email || user?.email),
-    createdAt: safeNumber(profileEntry.createdAt || user?.createdAt || user?.created_at || user?.registrationDate || user?.registeredAt)
+    name: normalizeString(profile.username || profile.name || profile.fullName || profile.displayName),
+    businessName: normalizeString(profile.businessName || profile.business_name || profile.companyName),
+    phone: normalizeString(profile.phoneNumber || profile.phone || profile.mobile || profile.contact),
+    email: normalizeString(profile.email),
+    createdAt: safeNumber(profile.transactionId || profile.createdAt || profile.created_at || profile.registrationDate || profile.registeredAt)
   };
 };
 
@@ -145,8 +151,9 @@ function classifyUser(userAnalytics) {
   if (lots > 0 && buys === 0 && sells === 0) return 'Lot Creator';
   if (buys > 0 && sells === 0) return 'Buyer';
   if (sells > 0 && buys === 0) return 'Seller';
-  if (buys > 0 && sells > 0) return 'Active Trader';
-  if (userAnalytics.isHighlyActive) return 'Highly Active';
+  if (buys > 0 && sells > 0) {
+    return userAnalytics.isHighlyActive ? 'Highly Active' : 'Active Trader';
+  }
   return 'Active';
 }
 
@@ -158,16 +165,14 @@ function isHighlyActive(userAnalytics) {
   return lots >= DEFAULT_ACTIVITY_THRESHOLD.lots || buys >= DEFAULT_ACTIVITY_THRESHOLD.buys || sells >= DEFAULT_ACTIVITY_THRESHOLD.sells;
 }
 
-function mergeUserDetails(usersMap, userId, userNode) {
-  const profile = getUserProfileInfo(userNode, userId);
-  const normalizedUser = {
-    uid: userId,
+function createUserEntry(uid, userNode) {
+  const profile = getUserProfileInfo(userNode, uid);
+
+  return {
+    uid,
     ...profile,
-    name: profile.name || userId,
-    businessName: profile.businessName,
-    phone: profile.phone,
-    email: profile.email,
-    createdAt: profile.createdAt,
+    name: profile.name || userNode?.business_name || userNode?.username || uid,
+    businessName: profile.businessName || userNode?.business_name || '',
     lots: 0,
     buyTransactions: 0,
     sellTransactions: 0,
@@ -182,11 +187,16 @@ function mergeUserDetails(usersMap, userId, userNode) {
     lastActivity: null,
     activityLabel: 'No Activity'
   };
-
-  usersMap.set(userId, normalizedUser);
-  return normalizedUser;
 }
 
+// ------------------------------
+// This is the heart of the analytics page.
+// We read all users once and build a summary for each user.
+// Total Users == users.children.count (Object.keys(STATE.users).length),
+// exactly like `snapshot.child('users').numChildren()` in Firebase terms.
+// Every lot/buy/sell record is always attributed to the {uid} it's nested
+// under - no more owner-guessing, no more phantom users.
+// ------------------------------
 function buildAnalytics() {
   const usersMap = new Map();
   const lotsByUser = new Map();
@@ -195,79 +205,74 @@ function buildAnalytics() {
 
   const allUserEntries = Object.entries(STATE.users || {});
 
-  allUserEntries.forEach(([uid, userNode]) => {
-    const user = mergeUserDetails(usersMap, uid, userNode);
+  // Total Users = users.children.count, i.e. exactly the number of top-level
+  // nodes under `users/` - nothing added, nothing removed.
+  const totalUsers = allUserEntries.length;
 
+  allUserEntries.forEach(([uid, userNode]) => {
+    const user = createUserEntry(uid, userNode);
+    usersMap.set(uid, user);
+
+    // ---- Lots ----
     const lotEntries = Object.entries(userNode?.lot || {});
     lotEntries.forEach(([lotId, lot]) => {
-      const ownerId = getRecordOwnerId(lot) || uid;
-      const entry = usersMap.get(ownerId) || mergeUserDetails(usersMap, ownerId, userNode);
-      entry.lotIds.push(String(lotId));
-      const quantity = safeNumber(lot.quantity || lot.qty || lot.totalQuantity || lot.amount || 0);
-      const value = safeNumber(lot.value || lot.total || lot.amount || lot.rate || 0);
-      entry.lots += 1;
-      entry.buyQuantity += 0;
-      entry.sellQuantity += 0;
-      entry.buyValue += 0;
-      entry.sellValue += 0;
-      entry.firstActivity = entry.firstActivity ? Math.min(entry.firstActivity, safeNumber(lot.date || lot.createdAt || lot.updatedAt || 0)) : safeNumber(lot.date || lot.createdAt || lot.updatedAt || 0);
-      entry.lastActivity = entry.lastActivity ? Math.max(entry.lastActivity, safeNumber(lot.date || lot.createdAt || lot.updatedAt || 0)) : safeNumber(lot.date || lot.createdAt || lot.updatedAt || 0);
-      const arr = lotsByUser.get(ownerId) || [];
-      arr.push({ lotId, ...lot, ownerId });
-      lotsByUser.set(ownerId, arr);
+      const date = safeNumber(lot.date || lot.createdAt || lot.updatedAt || 0);
+      user.lots += 1;
+      user.lotIds.push(String(lotId));
+      user.firstActivity = user.firstActivity ? Math.min(user.firstActivity, date) : date;
+      user.lastActivity = user.lastActivity ? Math.max(user.lastActivity, date) : date;
+
+      const arr = lotsByUser.get(uid) || [];
+      arr.push({ lotId, ...lot });
+      lotsByUser.set(uid, arr);
     });
 
+    // ---- Buy transactions ----
     const buyEntries = Object.entries(userNode?.buy_transactions || {});
     buyEntries.forEach(([txId, tx]) => {
-      const ownerId = getRecordOwnerId(tx) || uid;
-      const entry = usersMap.get(ownerId) || mergeUserDetails(usersMap, ownerId, userNode);
       const quantity = safeNumber(tx.quantity || tx.qty || 0);
       const total = safeNumber(tx.total || tx.amount || tx.value || 0);
       const date = safeNumber(tx.date || tx.createdAt || tx.transactionDate || tx.timestamp || 0);
-      entry.buyTransactions += 1;
-      entry.buyQuantity += quantity;
-      entry.buyValue += total;
-      entry.firstActivity = entry.firstActivity ? Math.min(entry.firstActivity, date) : date;
-      entry.lastActivity = entry.lastActivity ? Math.max(entry.lastActivity, date) : date;
-      const arr = buysByUser.get(ownerId) || [];
-      arr.push({ txId, ...tx, ownerId });
-      buysByUser.set(ownerId, arr);
+
+      user.buyTransactions += 1;
+      user.buyQuantity += quantity;
+      user.buyValue += total;
+      user.firstActivity = user.firstActivity ? Math.min(user.firstActivity, date) : date;
+      user.lastActivity = user.lastActivity ? Math.max(user.lastActivity, date) : date;
+
+      const arr = buysByUser.get(uid) || [];
+      arr.push({ txId, ...tx });
+      buysByUser.set(uid, arr);
     });
 
+    // ---- Sell transactions ----
     const sellEntries = Object.entries(userNode?.sell_transactions || {});
     sellEntries.forEach(([txId, tx]) => {
-      const ownerId = getRecordOwnerId(tx) || uid;
-      const entry = usersMap.get(ownerId) || mergeUserDetails(usersMap, ownerId, userNode);
       const quantity = safeNumber(tx.quantity || tx.qty || 0);
       const total = safeNumber(tx.total || tx.amount || tx.value || 0);
       const date = safeNumber(tx.date || tx.createdAt || tx.transactionDate || tx.timestamp || 0);
-      entry.sellTransactions += 1;
-      entry.sellQuantity += quantity;
-      entry.sellValue += total;
-      entry.firstActivity = entry.firstActivity ? Math.min(entry.firstActivity, date) : date;
-      entry.lastActivity = entry.lastActivity ? Math.max(entry.lastActivity, date) : date;
-      const arr = sellsByUser.get(ownerId) || [];
-      arr.push({ txId, ...tx, ownerId });
-      sellsByUser.set(ownerId, arr);
+
+      user.sellTransactions += 1;
+      user.sellQuantity += quantity;
+      user.sellValue += total;
+      user.firstActivity = user.firstActivity ? Math.min(user.firstActivity, date) : date;
+      user.lastActivity = user.lastActivity ? Math.max(user.lastActivity, date) : date;
+
+      const arr = sellsByUser.get(uid) || [];
+      arr.push({ txId, ...tx });
+      sellsByUser.set(uid, arr);
     });
   });
 
+  // Final per-user analytics object used by the table, cards, charts, and modal.
   const analytics = [...usersMap.values()].map((user) => {
     const lots = user.lots || 0;
     const buys = user.buyTransactions || 0;
     const sells = user.sellTransactions || 0;
     const highlyActive = isHighlyActive({ lots, buys, sells });
+
     return {
       ...user,
-      lots,
-      buys,
-      sells,
-      buyTransactions: buys,
-      sellTransactions: sells,
-      buyQuantity: user.buyQuantity || 0,
-      sellQuantity: user.sellQuantity || 0,
-      buyValue: user.buyValue || 0,
-      sellValue: user.sellValue || 0,
       totalTransactions: buys + sells,
       isHighlyActive: highlyActive,
       activityLabel: classifyUser({ lots, buys, sells, isHighlyActive: highlyActive }),
@@ -286,16 +291,18 @@ function buildAnalytics() {
     }
   });
 
-  const totalUsers = analytics.length;
-  const usersWithLots = analytics.filter((user) => user.lots > 0).length;
-  const usersWithBuys = analytics.filter((user) => user.buyTransactions > 0).length;
-  const usersWithSells = analytics.filter((user) => user.sellTransactions > 0).length;
-  const activeUsers = analytics.filter((user) => user.lots > 0 || user.buyTransactions > 0 || user.sellTransactions > 0).length;
-  const inactiveUsers = analytics.filter((user) => user.lots === 0 && user.buyTransactions === 0 && user.sellTransactions === 0).length;
-
-  const usersWithBuyAndSell = analytics.filter((user) => user.buyTransactions > 0 && user.sellTransactions > 0).length;
-  const usersWithLotsOnly = analytics.filter((user) => user.lots > 0 && user.buyTransactions === 0 && user.sellTransactions === 0).length;
-  const usersWithNoActivity = inactiveUsers;
+  // ---- Summary numbers, all derived from the SAME 39-user (or however many
+  // you actually have) analytics array - no double counting possible now ----
+  const usersWithLots = analytics.filter((u) => u.lots > 0).length;
+  const usersWithBuys = analytics.filter((u) => u.buyTransactions > 0).length;
+  const usersWithSells = analytics.filter((u) => u.sellTransactions > 0).length;
+  const activeUsers = analytics.filter((u) => u.lots > 0 || u.buyTransactions > 0 || u.sellTransactions > 0).length;
+  const inactiveUsers = analytics.filter((u) => u.lots === 0 && u.buyTransactions === 0 && u.sellTransactions === 0).length;
+  const usersWithBuyAndSell = analytics.filter((u) => u.buyTransactions > 0 && u.sellTransactions > 0).length;
+  const usersWithLotsOnly = analytics.filter((u) => u.lots > 0 && u.buyTransactions === 0 && u.sellTransactions === 0).length;
+  const usersWithBuyOnly = analytics.filter((u) => u.buyTransactions > 0 && u.sellTransactions === 0 && u.lots === 0).length;
+  const usersWithSellOnly = analytics.filter((u) => u.sellTransactions > 0 && u.buyTransactions === 0 && u.lots === 0).length;
+  const highlyActiveUsers = analytics.filter((u) => u.isHighlyActive).length;
 
   const summaryCards = [
     { label: 'Total Users', value: totalUsers, icon: '👥', tone: 'positive' },
@@ -312,19 +319,21 @@ function buildAnalytics() {
     { label: 'Users with Sells', value: usersWithSells },
     { label: 'Users with Buy + Sell', value: usersWithBuyAndSell },
     { label: 'Users with Lots Only', value: usersWithLotsOnly },
-    { label: 'Users with No Activity', value: usersWithNoActivity }
+    { label: 'Highly Active Users', value: highlyActiveUsers }
   ];
 
   renderSummaryCards(summaryCards);
   renderActivitySummary(summaryActivity);
   renderTopUsers(analytics);
+
+  STATE.analyticsByUser = analytics;
   applyFilters();
 
   renderDistributionChart({
-    noActivity: usersWithNoActivity,
+    noActivity: inactiveUsers,
     lotsOnly: usersWithLotsOnly,
-    buyOnly: analytics.filter((user) => user.buyTransactions > 0 && user.sellTransactions === 0 && user.lots === 0).length,
-    sellOnly: analytics.filter((user) => user.sellTransactions > 0 && user.buyTransactions === 0 && user.lots === 0).length,
+    buyOnly: usersWithBuyOnly,
+    sellOnly: usersWithSellOnly,
     buyAndSell: usersWithBuyAndSell
   });
 
@@ -361,7 +370,7 @@ function getFilteredUsers() {
   const sellValue = sellFilter?.value || 'all';
   const dateValue = dateFilter?.value || 'all-time';
 
-  const lowerBoundDate = resolveDateRange(dateValue); 
+  const lowerBoundDate = resolveDateRange(dateValue);
 
   return STATE.analyticsByUser.filter((user) => {
     const matchesSearch = !searchTerm || [
@@ -416,9 +425,9 @@ function matchesThreshold(value, threshold) {
 function matchesDateFilter(user, startDate, dateValue) {
   if (dateValue === 'all-time') return true;
   if (dateValue === 'custom') {
+    if (!dateFrom.value || !dateTo.value) return true;
     const from = new Date(dateFrom.value).getTime();
     const to = new Date(dateTo.value).getTime();
-    if (!dateFrom.value || !dateTo.value) return true;
     const lastActivity = Number(user.lastActivity || 0);
     return lastActivity >= from && lastActivity <= to + 86400000;
   }
@@ -438,8 +447,7 @@ function resolveDateRange(dateValue) {
   if (dateValue === 'last-3-months') return now - (90 * dayMs);
   if (dateValue === 'last-6-months') return now - (180 * dayMs);
   if (dateValue === 'this-year') {
-    const yearStart = new Date(new Date().getFullYear(), 0, 1).getTime();
-    return yearStart;
+    return new Date(new Date().getFullYear(), 0, 1).getTime();
   }
   return null;
 }
@@ -491,6 +499,11 @@ function renderUserTable(users) {
   nextPageButton.disabled = STATE.page >= totalPages;
 }
 
+// ------------------------------
+// Top 10 users by activity score
+// Formula:
+// activityScore = (lots * 3) + (buyTransactions * 2) + (sellTransactions * 2)
+// ------------------------------
 function renderTopUsers(analytics) {
   const topUsers = [...analytics]
     .map((user) => ({
@@ -561,9 +574,9 @@ function renderActivityTimeline(analytics) {
       const key = new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime();
       const entry = byDate.get(key) || { date: key, lots: 0, buys: 0, sells: 0, activeUsers: new Set() };
 
-      if (transaction.lotId || transaction.type === 'lot' || transaction.transactionType === 'lot') entry.lots += 1;
-      if (transaction.transactionType === 'BUY' || transaction.type === 'buy' || transaction.buyType) entry.buys += 1;
-      if (transaction.transactionType === 'SELL' || transaction.type === 'sell' || transaction.sellType) entry.sells += 1;
+      if (transaction.lotId && !transaction.transactionType) entry.lots += 1;
+      if (transaction.transactionType === 'BUY') entry.buys += 1;
+      if (transaction.transactionType === 'SELL') entry.sells += 1;
       entry.activeUsers.add(user.uid);
       byDate.set(key, entry);
     });
@@ -630,7 +643,7 @@ function openUserModal(userId) {
 
   recentTransactionsList.innerHTML = user.recentTransactions.length
     ? user.recentTransactions.map((item) => {
-        const type = item.transactionType || item.type || item.lotId ? 'Transaction' : 'Item';
+        const type = item.transactionType || (item.lotId && !item.transactionType ? 'Lot' : 'Transaction');
         const amount = item.total || item.amount || item.value || 0;
         const quantity = item.quantity || item.qty || 0;
         const when = formatDateTime(item.date || item.createdAt || item.timestamp);
@@ -650,15 +663,25 @@ async function loadAnalyticsData() {
   const snapshot = await get(usersRef);
 
   if (!snapshot.exists()) {
+    STATE.users = {};
     STATE.analyticsByUser = [];
     STATE.filteredUsers = [];
+    renderSummaryCards([
+      { label: 'Total Users', value: 0, icon: '👥', tone: 'positive' },
+      { label: 'Users With Lots', value: 0, icon: '🏷️', tone: 'positive' },
+      { label: 'Users With Buy Transactions', value: 0, icon: '🛒', tone: 'positive' },
+      { label: 'Users With Sell Transactions', value: 0, icon: '💰', tone: 'positive' },
+      { label: 'Active Users', value: 0, icon: '✅', tone: 'positive' },
+      { label: 'Inactive Users', value: 0, icon: '⭕', tone: 'warning' }
+    ]);
     renderUserTable([]);
     return;
   }
 
+  // snapshot.val() gives us exactly users/{uid}/... - Object.keys(...).length
+  // on this is the true "users.children.count".
   STATE.users = snapshot.val() || {};
   buildAnalytics();
-  STATE.analyticsByUser = [...STATE.filteredUsers];
 }
 
 onAuthStateChanged(auth, (user) => {
