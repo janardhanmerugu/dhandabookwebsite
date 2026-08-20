@@ -141,6 +141,7 @@ const getUserProfileInfo = (userNode, uid) => {
     businessName: normalizeString(profile.businessName || profile.business_name || profile.companyName),
     phone: normalizeString(profile.phoneNumber || profile.phone || profile.mobile || profile.contact),
     email: normalizeString(profile.email),
+    photoUrl: normalizeString(profile.photoUrl || profile.photoURL || profile.photo_url || profile.avatarUrl || profile.avatar),
     createdAt: safeNumber(profile.transactionId || profile.createdAt || profile.created_at || profile.registrationDate || profile.registeredAt)
   };
 };
@@ -478,8 +479,11 @@ function renderUserTable(users) {
   pageItems.forEach((user) => {
     const row = document.createElement('tr');
     row.classList.add('analytics-row');
+    const photoMarkup = user.photoUrl
+      ? `<img class="table-user-photo" src="${user.photoUrl}" alt="" loading="lazy" onerror="this.hidden=true">`
+      : '';
     row.innerHTML = `
-      <td><button class="table-user-button" data-user-id="${user.uid}">${toDisplayName(user)}</button></td>
+      <td><button class="table-user-button" data-user-id="${user.uid}">${photoMarkup}<span>${toDisplayName(user)}</span></button></td>
       <td>${numberFormatter.format(user.lots)}</td>
       <td>${numberFormatter.format(user.buyTransactions)}</td>
       <td>${numberFormatter.format(user.sellTransactions)}</td>

@@ -818,12 +818,24 @@ body {
 }
 
 .table-user-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
     border: none;
     background: transparent;
     color: var(--primary-color);
     font-weight: 600;
     text-align: left;
     cursor: pointer;
+}
+
+.table-user-photo {
+    width: 32px;
+    height: 32px;
+    flex: 0 0 32px;
+    border-radius: 50%;
+    object-fit: cover;
+    background: var(--background-color);
 }
 
 .analytics-row td {
