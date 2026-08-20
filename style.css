@@ -836,6 +836,49 @@ body {
     border-radius: 50%;
     object-fit: cover;
     background: var(--background-color);
+    cursor: zoom-in;
+    transition: transform 0.2s ease;
+}
+
+.table-user-photo:hover {
+    transform: scale(1.08);
+}
+
+.photo-lightbox {
+    position: fixed;
+    inset: 0;
+    z-index: 2200;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 32px;
+    background: rgba(0, 0, 0, 0.82);
+}
+
+.photo-lightbox.hidden {
+    display: none;
+}
+
+.photo-lightbox img {
+    max-width: min(90vw, 900px);
+    max-height: 85vh;
+    border-radius: 10px;
+    object-fit: contain;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+}
+
+.photo-lightbox-close {
+    position: absolute;
+    top: 20px;
+    right: 24px;
+    width: 40px;
+    height: 40px;
+    border: 1px solid rgba(255, 255, 255, 0.45);
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.35);
+    color: white;
+    cursor: pointer;
+    font-size: 20px;
 }
 
 .table-user-avatar {

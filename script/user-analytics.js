@@ -60,6 +60,9 @@ const userInfoGrid = document.getElementById('user-info-grid');
 const userActivityGrid = document.getElementById('user-activity-grid');
 const recentTransactionsList = document.getElementById('recent-transactions-list');
 const mostActiveUsersBody = document.getElementById('most-active-users-body');
+const photoLightbox = document.getElementById('photo-lightbox');
+const closePhotoLightboxButton = document.getElementById('close-photo-lightbox');
+const photoLightboxImage = document.getElementById('photo-lightbox-image');
 
 const safeNumber = (value) => {
   const asNumber = Number(value);
@@ -502,6 +505,14 @@ function renderUserTable(users) {
     `;
 
     row.querySelector('.table-user-button').addEventListener('click', () => openUserModal(user.uid));
+    const tablePhoto = row.querySelector('.table-user-photo');
+    if (tablePhoto) {
+      tablePhoto.addEventListener('click', (event) => {
+        event.stopPropagation();
+        photoLightboxImage.src = user.photoUrl;
+        photoLightbox.classList.remove('hidden');
+      });
+    }
     analyticsTableBody.appendChild(row);
   });
 
@@ -670,6 +681,11 @@ function closeUserModal() {
   modalBackdrop.classList.add('hidden');
 }
 
+function closePhotoLightbox() {
+  photoLightbox.classList.add('hidden');
+  photoLightboxImage.removeAttribute('src');
+}
+
 async function loadAnalyticsData() {
   const usersRef = ref(database, 'users');
   const snapshot = await get(usersRef);
@@ -781,6 +797,17 @@ document.addEventListener('DOMContentLoaded', () => {
   closeModalButton.addEventListener('click', closeUserModal);
   modalBackdrop.addEventListener('click', (event) => {
     if (event.target === modalBackdrop) closeUserModal();
+  });
+
+  closePhotoLightboxButton.addEventListener('click', closePhotoLightbox);
+  photoLightbox.addEventListener('click', (event) => {
+    if (event.target === photoLightbox) closePhotoLightbox();
+  });
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') {
+      closeUserModal();
+      closePhotoLightbox();
+    }
   });
 });
 
