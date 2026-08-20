@@ -17,7 +17,7 @@ function showError(message) {
 
 onAuthStateChanged(auth, (user) => {
     if (user) {
-        window.location.href = './dashboard.html';
+        window.location.href = './user-analytics.html';
     }
 });
 
