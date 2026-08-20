@@ -466,7 +466,7 @@ function renderUserTable(users) {
   analyticsTableBody.innerHTML = '';
 
   if (!pageItems.length) {
-    analyticsTableBody.innerHTML = '<tr><td colspan="10" class="text-center py-4 text-muted">No matching users found.</td></tr>';
+    analyticsTableBody.innerHTML = '<tr><td colspan="8" class="text-center py-4 text-muted">No matching users found.</td></tr>';
     pageIndicator.textContent = 'Page 0';
     prevPageButton.disabled = true;
     nextPageButton.disabled = true;
@@ -483,8 +483,6 @@ function renderUserTable(users) {
       <td>${numberFormatter.format(user.sellTransactions)}</td>
       <td>${numberFormatter.format(user.buyQuantity)}</td>
       <td>${numberFormatter.format(user.sellQuantity)}</td>
-      <td>${currencyFormatter.format(user.buyValue)}</td>
-      <td>${currencyFormatter.format(user.sellValue)}</td>
       <td>${formatDate(user.lastActivity)}</td>
       <td><span class="badge ${user.isHighlyActive ? 'badge--high' : ''}">${user.activityLabel}</span></td>
     `;
